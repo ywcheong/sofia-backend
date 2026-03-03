@@ -2,6 +2,7 @@ package ywcheong.sofia.kakao
 
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.BeforeEach
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.core.io.ClassPathResource
 import org.springframework.http.MediaType
@@ -10,8 +11,9 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
+import org.springframework.test.web.servlet.setup.StandaloneMockMvcBuilder
 import org.springframework.util.StreamUtils
-import org.springframework.web.context.WebApplicationContext
+import ywcheong.sofia.kakao.controller.KakaoSkillApplyController
 import ywcheong.sofia.kakao.filter.KakaoSkillSecretFilter
 import java.nio.charset.StandardCharsets
 
@@ -22,19 +24,36 @@ import java.nio.charset.StandardCharsets
     ],
 )
 class KakaoSkillSecretFilterTest(
-    private val webApplicationContext: WebApplicationContext,
 ) {
+    @Autowired
+    private lateinit var kakaoSkillApplyController: KakaoSkillApplyController
+
+    @Autowired
+    private lateinit var kakaoSkillSecretFilter: KakaoSkillSecretFilter
+
     private lateinit var mockMvc: MockMvc
 
     @BeforeEach
     fun setUp() {
-        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build()
+        val builder: StandaloneMockMvcBuilder = MockMvcBuilders.standaloneSetup(kakaoSkillApplyController)
+        builder.addFilters<StandaloneMockMvcBuilder>(kakaoSkillSecretFilter)
+        mockMvc = builder.build()
     }
 
     @Test
     fun `missing secret header returns forbidden`() {
         mockMvc.perform(
             post("/kakao/skill/apply")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(loadFixture()),
+        )
+            .andExpect(status().isForbidden)
+    }
+
+    @Test
+    fun `missing secret header returns forbidden on nested kakao skill path`() {
+        mockMvc.perform(
+            post("/kakao/skill/work/report-completion")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(loadFixture()),
         )

@@ -1,16 +1,30 @@
 {
-  "intent": {
-    "id": "intent-apply",
-    "name": "지원하기"
-  },
   "userRequest": {
     "utterance": "지원할게요",
-    "timezone": "Asia/Seoul"
+    "timezone": "Asia/Seoul",
+    "user": {
+      "id": "kakao-user-123",
+      "properties": {
+        "plusfriendUserKey": "pf-user-789"
+      }
+    }
   },
   "action": {
+    "id": "apply-action-id",
     "name": "apply",
     "params": {
-      "resumeId": "R-100"
+      "studentId": "20260001",
+      "name": "홍길동"
+    },
+    "detailParams": {
+      "studentId": {
+        "origin": "20260001",
+        "value": "20260001"
+      },
+      "name": {
+        "origin": "홍길동",
+        "value": "홍길동"
+      }
     }
   }
 }

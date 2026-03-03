@@ -12,16 +12,15 @@ class KakaoSkillSecretFilter(
     @Value("\${KAKAO_SKILL_SECRET:}")
     private val kakaoSkillSecret: String,
 ) : OncePerRequestFilter() {
+    override fun shouldNotFilter(request: HttpServletRequest): Boolean {
+        return !request.requestURI.startsWith("/kakao/skill/")
+    }
+
     override fun doFilterInternal(
         request: HttpServletRequest,
         response: HttpServletResponse,
         filterChain: FilterChain,
     ) {
-        if (!request.requestURI.startsWith("/kakao/skill/")) {
-            filterChain.doFilter(request, response)
-            return
-        }
-
         val providedSecret = request.getHeader(HEADER_NAME)
         if (providedSecret != kakaoSkillSecret) {
             response.sendError(HttpServletResponse.SC_FORBIDDEN)

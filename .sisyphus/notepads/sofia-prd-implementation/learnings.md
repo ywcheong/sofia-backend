@@ -1,2 +1,3 @@
 - Task 2 notes (2026-03-03): Spring Boot 4 test context needs explicit datasource autoconfiguration exclusion in tests for this greenfield setup because JPA starter is present without datasource properties.
 - Task 2 notes (2026-03-03): Kakao skill request DTOs should use `@JsonIgnoreProperties(ignoreUnknown = true)` to stay resilient to Open Builder payload field expansion.
+- Task 2 notes (2026-03-03): Register Kakao secret verification in `OncePerRequestFilter.shouldNotFilter` with `/kakao/skill/` prefix matching so nested skill endpoints are protected without controller-level header checks.
