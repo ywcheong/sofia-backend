@@ -1,0 +1,22 @@
+services:
+  mysql:
+    image: mysql:8.3
+    container_name: sofia-mysql
+    environment:
+      MYSQL_DATABASE: sofia
+      MYSQL_USER: sofia
+      MYSQL_PASSWORD: sofia
+      MYSQL_ROOT_PASSWORD: sofia-root
+    ports:
+      - "3306:3306"
+    volumes:
+      - sofia-mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-psofia-root"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+volumes:
+  sofia-mysql-data:

@@ -1,0 +1,10 @@
+spring:
+  datasource:
+    url: jdbc:tc:mysql:8.3:///sofia?TC_DAEMON=true&connectionTimeZone=UTC
+    username: test
+    password: test
+  jpa:
+    hibernate:
+      ddl-auto: none
+  flyway:
+    enabled: true

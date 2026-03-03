@@ -1,0 +1,1 @@
+- 2026-03-03: `lsp_diagnostics` for `build.gradle.kts` could not run because `kotlin-lsp` is not installed in this environment.

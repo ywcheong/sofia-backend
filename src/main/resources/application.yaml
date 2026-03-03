@@ -1,3 +1,17 @@
 spring:
   application:
     name: sofia
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+
+kakao:
+  skill:
+    secret: ${KAKAO_SKILL_SECRET:dev-kakao-skill-secret}
+
+auth:
+  token:
+    pepper: ${AUTH_TOKEN_PEPPER:dev-auth-token-pepper}
