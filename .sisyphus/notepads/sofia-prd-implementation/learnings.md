@@ -1,0 +1,2 @@
+- 2026-03-03: For local profile, set `spring.flyway.enabled=false` when using `spring.jpa.hibernate.ddl-auto=update` to avoid schema-management overlap.
+- 2026-03-03: Keep `org.flywaydb:flyway-database-mysql` in dependencies for plan compliance, and use a narrow substitution only when resolution fails in the active environment.

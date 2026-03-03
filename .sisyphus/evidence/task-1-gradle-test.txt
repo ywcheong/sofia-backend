@@ -1,20 +1,20 @@
+NOTE: Validation step (before this final run) removed dependency substitution and `./gradlew test` failed with `Could not find org.flywaydb:flyway-database-mysql:.`; substitution was restored as minimal fix.
 COMMAND: ./gradlew test
 > Task :checkKotlinGradlePluginConfigurationErrors SKIPPED
 > Task :compileKotlin UP-TO-DATE
 > Task :compileJava NO-SOURCE
-> Task :processResources UP-TO-DATE
-> Task :classes UP-TO-DATE
-> Task :jar UP-TO-DATE
+> Task :processResources
+> Task :classes
+> Task :jar
 > Task :compileTestKotlin UP-TO-DATE
 > Task :compileTestJava NO-SOURCE
 > Task :processTestResources NO-SOURCE
 > Task :testClasses UP-TO-DATE
+2026-03-03T13:21:40.444+09:00  INFO 64262 --- [sofia] [ionShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-03-03T13:21:40.445+09:00  INFO 64262 --- [sofia] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-03-03T13:21:40.447+09:00  INFO 64262 --- [sofia] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
 > Task :test
 
-2026-03-03T13:16:20.978+09:00  INFO 59192 --- [sofia] [ionShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
-2026-03-03T13:16:20.979+09:00  INFO 59192 --- [sofia] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
-2026-03-03T13:16:20.981+09:00  INFO 59192 --- [sofia] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
-
-BUILD SUCCESSFUL in 40s
-5 actionable tasks: 1 executed, 4 up-to-date
+BUILD SUCCESSFUL in 12s
+5 actionable tasks: 3 executed, 2 up-to-date
 Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.3.1/userguide/configuration_cache_enabling.html

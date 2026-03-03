@@ -1,1 +1,2 @@
 - 2026-03-03: `lsp_diagnostics` for `build.gradle.kts` could not run because `kotlin-lsp` is not installed in this environment.
+- 2026-03-03: Removing Gradle substitution caused dependency resolution failure for `org.flywaydb:flyway-database-mysql`; build required a minimal substitution to `org.flywaydb:flyway-mysql:11.8.2`.
