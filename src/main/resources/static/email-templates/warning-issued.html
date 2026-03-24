@@ -1,0 +1,21 @@
+    <div style="background-color: #f9f9f9; border-radius: 8px; padding: 30px; margin-bottom: 20px;">
+        <h1 style="color: #e74c3c; margin-bottom: 20px; font-size: 24px;">경고가 발행되었습니다</h1>
+
+        <p style="font-size: 16px; margin-bottom: 20px;">
+            안녕하세요, <strong>{{recipientName}}</strong>님.
+        </p>
+
+        <p style="font-size: 16px; margin-bottom: 20px;">
+            귀하께서 다음 사유로 경고를 받으셨습니다.
+        </p>
+
+        <div style="background-color: #fff; border: 1px solid #e0e0e0; border-left: 4px solid #e74c3c; border-radius: 6px; padding: 20px; margin-bottom: 20px;">
+            <p style="margin: 0 0 10px 0;"><strong>경고 사유:</strong> {{warningReason}}</p>
+            <p style="margin: 0 0 10px 0;"><strong>누적 경고 횟수:</strong> {{warningCount}}회</p>
+            <p style="margin: 0;"><strong>발행 일시:</strong> {{issuedAt}}</p>
+        </div>
+
+        <p style="font-size: 14px; color: #666;">
+            경고가 누적될 경우 참가자 자격이 제한될 수 있습니다. 향후에는 규정을 준수해 주시기 바랍니다.
+        </p>
+    </div>

@@ -1,0 +1,20 @@
+    <div style="background-color: #f9f9f9; border-radius: 8px; padding: 30px; margin-bottom: 20px;">
+        <h1 style="color: #2c3e50; margin-bottom: 20px; font-size: 24px;">새로운 과제가 할당되었습니다</h1>
+
+        <p style="font-size: 16px; margin-bottom: 20px;">
+            안녕하세요, <strong>{{recipientName}}</strong>님.
+        </p>
+
+        <p style="font-size: 16px; margin-bottom: 20px;">
+            새로운 번역 과제가 할당되었습니다. 아래 내용을 확인해 주세요.
+        </p>
+
+        <div style="background-color: #fff; border: 1px solid #e0e0e0; border-radius: 6px; padding: 20px; margin-bottom: 20px;">
+            <p style="margin: 0 0 10px 0;"><strong>과제 제목:</strong> {{taskTitle}}</p>
+            <p style="margin: 0 0 10px 0;"><strong>제출 기한:</strong> {{taskDeadline}}</p>
+        </div>
+
+        <a href="{{taskLink}}" style="display: inline-block; background-color: #3498db; color: #fff; text-decoration: none; padding: 12px 24px; border-radius: 4px; font-size: 16px;">
+            과제 보러가기
+        </a>
+    </div>
