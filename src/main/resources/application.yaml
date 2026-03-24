@@ -1,3 +1,39 @@
 spring:
   application:
     name: sofia
+  datasource:
+    url: jdbc:h2:mem:testdb;MODE=MySQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  mail:
+    host: localhost
+    port: 25
+  jpa:
+    properties:
+      org.hibernate.envers:
+        audit_table_suffix: _audit
+        audit_strategy: org.hibernate.envers.strategy.DefaultAuditStrategy
+    open-in-view: false
+  h2:
+    console:
+      enabled: true
+
+server:
+  forward-headers-strategy: framework
+
+sofia:
+  task:
+    seconds-per-character: 3.942
+    late-threshold-hours: 48
+  kakao:
+    skill:
+      secret-token: replace-me-11!!
+  first-boot:
+    create-admin-if-empty: true
+    admin-student-number: 18-100
+  email:
+    enabled: true
+    base-url: sofia-test.ywcheong.com
+    from: sofia-test@ywcheong.com
+    from-name: KSA 국제부 번역버디 ERP
