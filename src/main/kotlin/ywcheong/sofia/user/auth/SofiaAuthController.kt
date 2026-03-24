@@ -14,11 +14,23 @@ import ywcheong.sofia.user.SofiaUser
 class SofiaAuthController {
     @AvailableCondition(phases = [], permissions = [])
     @GetMapping("/auth/check")
-    fun identityCheck(@CurrentUser user: SofiaUser?): ResponseEntity<String> {
+    fun identityCheck(@CurrentUser user: SofiaUser?): ResponseEntity<AuthCheckResponse> {
         return if (user != null) {
-            ResponseEntity.ok(user.id.toString())
+            ResponseEntity.ok(
+                AuthCheckResponse(
+                    userId = user.id.toString(),
+                    userStudentNumber = user.studentNumber,
+                    userStudentName = user.studentName,
+                ),
+            )
         } else {
             ResponseEntity.status(HttpStatus.CREATED).build()
         }
     }
 }
+
+data class AuthCheckResponse(
+    val userId: String,
+    val userStudentNumber: String,
+    val userStudentName: String,
+)
