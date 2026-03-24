@@ -1,0 +1,60 @@
+package ywcheong.sofia.task
+
+import jakarta.persistence.Column
+import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
+import jakarta.persistence.FetchType
+import jakarta.persistence.Id
+import jakarta.persistence.JoinColumn
+import jakarta.persistence.ManyToOne
+import ywcheong.sofia.user.SofiaUser
+import java.time.Instant
+import java.util.UUID
+
+@Entity
+class TranslationTask(
+    @Id
+    val id: UUID = UUID.randomUUID(),
+
+    @Enumerated(EnumType.STRING)
+    val taskType: TaskType,
+
+    @Column(length = 50)
+    val taskDescription: String,
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "assignee_id")
+    val assignee: SofiaUser,
+
+    @Enumerated(EnumType.STRING)
+    val assignmentType: AssignmentType,
+
+    val assignedAt: Instant = Instant.now(),
+
+    var completedAt: Instant? = null,
+
+    var characterCount: Int? = null,
+
+    var remindedAt: Instant? = null,
+) {
+    val isCompleted: Boolean
+        get() = completedAt != null
+
+    val isReminded: Boolean
+        get() = remindedAt != null
+
+    fun markReminded(at: Instant = Instant.now()) {
+        this.remindedAt = at
+    }
+
+    enum class TaskType {
+        GAONNURI_POST,
+        EXTERNAL_POST,
+    }
+
+    enum class AssignmentType {
+        AUTOMATIC,
+        MANUAL,
+    }
+}
