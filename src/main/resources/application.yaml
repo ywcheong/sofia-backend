@@ -37,3 +37,5 @@ sofia:
     base-url: sofia-test.ywcheong.com
     from: sofia-test@ywcheong.com
     from-name: KSA 국제부 번역버디 ERP
+  dummy:
+    enabled: true

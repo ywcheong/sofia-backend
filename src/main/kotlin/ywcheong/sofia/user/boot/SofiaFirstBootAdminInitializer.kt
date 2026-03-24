@@ -2,6 +2,7 @@ package ywcheong.sofia.user.boot
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.boot.CommandLineRunner
+import org.springframework.core.annotation.Order
 import org.springframework.stereotype.Component
 import ywcheong.sofia.user.SofiaUser
 import ywcheong.sofia.user.SofiaUserRepository
@@ -9,6 +10,7 @@ import ywcheong.sofia.user.SofiaUserRole
 import ywcheong.sofia.user.auth.SofiaUserAuthRepository
 
 @Component
+@Order(100)
 class SofiaFirstBootAdminInitializer(
     private val userRepository: SofiaUserRepository,
     private val userAuthRepository: SofiaUserAuthRepository,
