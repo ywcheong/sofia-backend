@@ -27,6 +27,7 @@ class SecurityConfiguration(
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
             .authorizeHttpRequests { it.anyRequest().permitAll() }
             .exceptionHandling { it.authenticationEntryPoint(securityExceptionHandler) }
+            .headers { it.frameOptions { frameOptions -> frameOptions.sameOrigin() } }
             .addFilterBefore(
                 requestLoggingFilter,
                 ExceptionTranslationFilter::class.java,
