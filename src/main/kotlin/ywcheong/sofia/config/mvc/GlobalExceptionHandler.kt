@@ -27,7 +27,7 @@ class GlobalExceptionHandler(
 
     @ExceptionHandler(BusinessException::class)
     fun handleBusinessException(ex: BusinessException): ProblemDetail {
-        log.warn(ex) { "비즈니스 오류: ${ex.message}" }
+        log.warn { "비즈니스 오류: ${ex.message}" }
 
         return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.message).apply {
             type = swaggerUiConfigUri
@@ -45,7 +45,7 @@ class GlobalExceptionHandler(
 
     @ExceptionHandler(AccessDeniedException::class)
     fun handleAccessDeniedException(ex: AccessDeniedException): ProblemDetail {
-        log.warn(ex) { "권한 오류: ${ex.message}" }
+        log.warn { "권한 오류: ${ex.message}" }
 
         return ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, ex.message ?: "권한이 부족합니다.").apply {
             type = swaggerUiConfigUri
@@ -54,7 +54,7 @@ class GlobalExceptionHandler(
 
     @ExceptionHandler(AuthenticationException::class)
     fun handleAuthenticationException(ex: AuthenticationException): ProblemDetail {
-        log.warn(ex) { "인증 오류: ${ex.message}" }
+        log.warn { "인증 오류: ${ex.message}" }
 
         return ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, ex.message ?: "인증에 실패했습니다.").apply {
             type = swaggerUiConfigUri
