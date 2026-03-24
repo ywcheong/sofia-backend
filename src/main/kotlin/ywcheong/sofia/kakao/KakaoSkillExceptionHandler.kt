@@ -1,0 +1,29 @@
+package ywcheong.sofia.kakao
+
+import io.github.oshai.kotlinlogging.KotlinLogging
+import io.swagger.v3.oas.annotations.tags.Tag
+import org.springframework.core.Ordered
+import org.springframework.core.annotation.Order
+import org.springframework.web.bind.annotation.ExceptionHandler
+import org.springframework.web.bind.annotation.RestControllerAdvice
+
+/**
+ * Kakao Skill 관련 예외를 처리하여 SkillResponse 형식으로 변환합니다.
+ */
+@RestControllerAdvice
+@Order(Ordered.HIGHEST_PRECEDENCE)
+@Tag(name = "Kakao Skill Exception Handler", description = "카카오톡 스킬 예외 처리기")
+class KakaoSkillExceptionHandler {
+    private val logger = KotlinLogging.logger {}
+
+    @ExceptionHandler(KakaoSkillException::class)
+    fun handleKakaoSkillException(ex: KakaoSkillException): KakaoSkillController.SkillResponse {
+        val cause = ex.cause
+        if (cause != null) {
+            // 원인 예외가 있으면 로깅
+            logger.error(cause) { "Kakao Skill 오류: ${cause.message}" }
+        }
+
+        return KakaoSkillController.SkillResponse.simpleText(ex.userMessage)
+    }
+}
