@@ -94,6 +94,142 @@ class UserManagementTest(
                 jsonPath("$.content[0].adjustedCharCount") { isNumber() }
             }
         }
+
+        @Test
+        fun `사용자 목록 조회 - 자수 필드 포함`() {
+            // given - 사용자 생성 및 과제 완료
+            val user = helper.createActiveStudent("25-100", "자수테스트")
+            val task = helper.createTranslationTask(
+                taskType = ywcheong.sofia.task.TranslationTask.TaskType.GAONNURI_POST,
+                taskDescription = "테스트 과제",
+                assignee = user
+            )
+            // 과제 완료 처리를 위해 직접 상태 변경 (도우미 메서드 필요시 추가)
+            completeTask(task.id)
+
+            // when & then
+            mockMvc.get("/users?page=0&size=10") {
+                header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.content[0].completedCharCount") { isNumber() }
+                jsonPath("$.content[0].totalCharCount") { isNumber() }
+                jsonPath("$.content[0].adjustedCharCount") { isNumber() }
+            }
+        }
+
+        @Test
+        fun `사용자 목록 조회 - 학번으로 검색`() {
+            // given - 여러 사용자 생성
+            helper.createActiveStudent("25-200", "김철수")
+            helper.createActiveStudent("25-201", "이영희")
+            helper.createActiveStudent("26-001", "박민수")
+
+            // when & then - 학번으로 검색
+            mockMvc.get("/users?page=0&size=10&search=25-20") {
+                header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.content.length()") { value(2) } // 25-200, 25-201 매칭
+            }
+        }
+
+        @Test
+        fun `사용자 목록 조회 - 이름으로 검색`() {
+            // given - 여러 사용자 생성
+            helper.createActiveStudent("25-210", "김철수")
+            helper.createActiveStudent("25-211", "이철수")
+            helper.createActiveStudent("25-212", "박민수")
+
+            // when & then - 이름으로 검색
+            mockMvc.get("/users?page=0&size=10&search=철수") {
+                header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.content.length()") { value(2) } // 김철수, 이철수 매칭
+            }
+        }
+
+        @Test
+        fun `사용자 목록 조회 - 권한으로 필터링`() {
+            // given - 학생과 관리자 생성
+            helper.createActiveStudent("25-220", "일반학생")
+            helper.createAdminAndGetToken("admin-filter", "관리자학생")
+
+            // when & then - 관리자만 조회
+            mockMvc.get("/users?page=0&size=10&role=ADMIN") {
+                header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.content.length()") { value(2) } // adminInfo + admin-filter
+                jsonPath("$.content[*].role") { value(mutableListOf("ADMIN", "ADMIN")) }
+            }
+        }
+
+        @Test
+        fun `사용자 목록 조회 - 학생만 필터링`() {
+            // given - 학생과 관리자 생성
+            helper.createActiveStudent("25-230", "학생A")
+            helper.createActiveStudent("25-231", "학생B")
+            // adminInfo는 이미 관리자로 존재
+
+            // when & then - 학생만 조회
+            mockMvc.get("/users?page=0&size=10&role=STUDENT") {
+                header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.content.length()") { value(2) } // 학생A, 학생B
+            }
+        }
+
+        @Test
+        fun `사용자 목록 조회 - 휴식 상태로 필터링`() {
+            // given - 활성 사용자와 휴식 사용자 생성
+            helper.createActiveStudent("25-240", "활성사용자")
+            val restingUser = helper.createActiveStudent("25-241", "휴식사용자")
+            helper.setUserResting(restingUser.id, true)
+
+            // when & then - 휴식 중인 사용자만 조회
+            mockMvc.get("/users?page=0&size=10&rest=true") {
+                header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.content.length()") { value(2) } // adminInfo + restingUser (둘 다 휴식)
+            }
+        }
+
+        @Test
+        fun `사용자 목록 조회 - 활성 상태로 필터링`() {
+            // given - 활성 사용자와 휴식 사용자 생성
+            helper.createActiveStudent("25-250", "활성A")
+            helper.createActiveStudent("25-251", "활성B")
+            // adminInfo는 휴식 상태
+
+            // when & then - 활성 사용자만 조회
+            mockMvc.get("/users?page=0&size=10&rest=false") {
+                header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.content.length()") { value(2) } // 활성A, 활성B
+            }
+        }
+
+        @Test
+        fun `사용자 목록 조회 - 복합 조건 필터링`() {
+            // given - 다양한 조건의 사용자 생성
+            helper.createActiveStudent("25-260", "김학생")
+            val restingStudent = helper.createActiveStudent("25-261", "이학생")
+            helper.setUserResting(restingStudent.id, true)
+
+            // when & then - 활성 상태 + 학생 권한으로 필터링
+            mockMvc.get("/users?page=0&size=10&role=STUDENT&rest=false") {
+                header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.content.length()") { value(1) } // 김학생만 해당
+                jsonPath("$.content[0].studentName") { value("김학생") }
+            }
+        }
     }
 
     @Nested
@@ -478,6 +614,20 @@ class UserManagementTest(
             contentType = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(request)
             header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+        }.andExpect {
+            status { isOk() }
+        }
+    }
+
+    // 헬퍼 메서드: 과제 완료 처리 (API 사용)
+    private fun completeTask(taskId: java.util.UUID, characterCount: Int = 1000) {
+        val request = mapOf(
+            "characterCount" to characterCount,
+        )
+        mockMvc.post("/tasks/$taskId/completion") {
+            contentType = MediaType.APPLICATION_JSON
+            content = objectMapper.writeValueAsString(request)
+            header("Authorization", helper.kakaoAuthHeader())
         }.andExpect {
             status { isOk() }
         }

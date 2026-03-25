@@ -10,6 +10,7 @@ import ywcheong.sofia.commons.BusinessException
 import ywcheong.sofia.email.EmailSendService
 import ywcheong.sofia.email.templates.DemotedFromAdminEmailTemplate
 import ywcheong.sofia.email.templates.PromotedToAdminEmailTemplate
+import ywcheong.sofia.task.TranslationTaskRepository
 import ywcheong.sofia.task.user.SofiaUserTaskStatusRepository
 import ywcheong.sofia.user.auth.SofiaUserAuthRepository
 import java.time.Instant
@@ -22,21 +23,90 @@ class UserManagementService(
     private val sofiaUserRepository: SofiaUserRepository,
     private val sofiaUserTaskStatusRepository: SofiaUserTaskStatusRepository,
     private val sofiaUserAuthRepository: SofiaUserAuthRepository,
+    private val translationTaskRepository: TranslationTaskRepository,
     private val emailSendService: EmailSendService,
 ) {
     private val logger = KotlinLogging.logger {}
 
-    fun findAllUsers(pageable: Pageable): Page<UserManagementController.UserSummaryResponse> {
-        return sofiaUserRepository.findAll(pageable).map { user ->
-            UserManagementController.UserSummaryResponse(
+    /**
+     * 사용자 목록 조회 결과
+     */
+    data class FindAllUsersResult(
+        val id: UUID,
+        val studentNumber: String,
+        val studentName: String,
+        val role: SofiaUserRole,
+        val rest: Boolean,
+        val warningCount: Int,
+        val adjustedCharCount: Int,
+        val completedCharCount: Int,
+        val totalCharCount: Int,
+    )
+
+    /**
+     * 사용자 목록 조회 조건
+     */
+    data class FindAllUsersCondition(
+        val search: String?,
+        val role: SofiaUserRole?,
+        val rest: Boolean?,
+    )
+
+    fun findAllUsers(condition: FindAllUsersCondition, pageable: Pageable): Page<FindAllUsersResult> {
+        val spec = createUserFilterSpecification(condition)
+        val users = sofiaUserRepository.findAll(spec, pageable)
+        val userIds = users.content.map { it.id }
+        val charCountMap = translationTaskRepository
+            .sumCharacterCountByAssigneeIn(userIds)
+            .associate { row ->
+                val userId = row[0] as UUID
+                val charCount = (row[1] as Number).toInt()
+                userId to charCount
+            }
+
+        return users.map { user ->
+            val completedCharCount = charCountMap[user.id] ?: 0
+            val adjustedCharCount = user.taskStatus.adjustedCharCount
+            val totalCharCount = completedCharCount + adjustedCharCount
+            FindAllUsersResult(
                 id = user.id,
                 studentNumber = user.studentNumber,
                 studentName = user.studentName,
                 role = user.auth.role,
                 rest = user.taskStatus.rest,
                 warningCount = user.taskStatus.warningCount,
-                adjustedCharCount = user.taskStatus.adjustedCharCount,
+                adjustedCharCount = adjustedCharCount,
+                completedCharCount = completedCharCount,
+                totalCharCount = totalCharCount,
             )
+        }
+    }
+
+    private fun createUserFilterSpecification(condition: FindAllUsersCondition): org.springframework.data.jpa.domain.Specification<SofiaUser> {
+        return org.springframework.data.jpa.domain.Specification { root, _, cb ->
+            val predicates = mutableListOf<jakarta.persistence.criteria.Predicate>()
+
+            // 검색어 필터 (학번 또는 이름에 포함, 대소문자 무시)
+            condition.search?.let { search ->
+                val searchPattern = "%${search.lowercase()}%"
+                val studentNumberLike = cb.like(cb.lower(root.get("studentNumber")), searchPattern)
+                val studentNameLike = cb.like(cb.lower(root.get("studentName")), searchPattern)
+                predicates.add(cb.or(studentNumberLike, studentNameLike))
+            }
+
+            // 권한 필터
+            condition.role?.let { role ->
+                val authJoin = root.join<SofiaUser, ywcheong.sofia.user.auth.SofiaUserAuth>("auth")
+                predicates.add(cb.equal(authJoin.get<ywcheong.sofia.user.SofiaUserRole>("role"), role))
+            }
+
+            // 휴식 상태 필터
+            condition.rest?.let { rest ->
+                val taskStatusJoin = root.join<SofiaUser, ywcheong.sofia.task.user.SofiaUserTaskStatus>("taskStatus")
+                predicates.add(cb.equal(taskStatusJoin.get<Boolean>("rest"), rest))
+            }
+
+            cb.and(*predicates.toTypedArray())
         }
     }
 

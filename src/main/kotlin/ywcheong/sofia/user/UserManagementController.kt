@@ -8,13 +8,14 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import ywcheong.sofia.aspect.AvailableCondition
 import ywcheong.sofia.commons.PageResponse
 import ywcheong.sofia.config.security.CurrentUser
 import ywcheong.sofia.phase.SystemPhase
 import ywcheong.sofia.user.auth.SofiaPermission
-import java.util.UUID
+import java.util.*
 
 @RestController
 @RequestMapping("/users")
@@ -32,14 +33,45 @@ class UserManagementController(
         val role: SofiaUserRole,
         val rest: Boolean,
         val warningCount: Int,
+        val completedCharCount: Int,
         val adjustedCharCount: Int,
+        val totalCharCount: Int,
     )
 
-    @AvailableCondition(phases = [SystemPhase.RECRUITMENT, SystemPhase.TRANSLATION, SystemPhase.SETTLEMENT], permissions = [SofiaPermission.ADMIN_LEVEL])
+    @AvailableCondition(
+        phases = [SystemPhase.RECRUITMENT, SystemPhase.TRANSLATION, SystemPhase.SETTLEMENT],
+        permissions = [SofiaPermission.ADMIN_LEVEL]
+    )
     @GetMapping
-    fun findAllUsers(pageable: Pageable): PageResponse<UserSummaryResponse> {
-        logger.info { "사용자 목록 조회 요청: page=${pageable.pageNumber}, size=${pageable.pageSize}" }
-        return PageResponse.from(userManagementService.findAllUsers(pageable))
+    fun findAllUsers(
+        pageable: Pageable,
+        @RequestParam(required = false) search: String?,
+        @RequestParam(required = false) role: SofiaUserRole?,
+        @RequestParam(required = false) rest: Boolean?,
+    ): PageResponse<UserSummaryResponse> {
+        logger.info { "사용자 목록 조회 요청: page=${pageable.pageNumber}, size=${pageable.pageSize}, search=$search, role=$role, rest=$rest" }
+
+        val condition = UserManagementService.FindAllUsersCondition(
+            search = search,
+            role = role,
+            rest = rest,
+        )
+
+        val resultPage = userManagementService.findAllUsers(condition, pageable)
+
+        return PageResponse.from(resultPage.map { result ->
+            UserSummaryResponse(
+                id = result.id,
+                studentNumber = result.studentNumber,
+                studentName = result.studentName,
+                role = result.role,
+                rest = result.rest,
+                warningCount = result.warningCount,
+                completedCharCount = result.completedCharCount,
+                adjustedCharCount = result.adjustedCharCount,
+                totalCharCount = result.totalCharCount,
+            )
+        })
     }
 
     // UC-013: 개인 휴식 설정
@@ -52,7 +84,10 @@ class UserManagementController(
         val rest: Boolean,
     )
 
-    @AvailableCondition(phases = [SystemPhase.RECRUITMENT, SystemPhase.TRANSLATION], permissions = [SofiaPermission.ADMIN_LEVEL])
+    @AvailableCondition(
+        phases = [SystemPhase.RECRUITMENT, SystemPhase.TRANSLATION],
+        permissions = [SofiaPermission.ADMIN_LEVEL]
+    )
     @PostMapping("/{userId}/rest")
     fun setRestStatus(
         @PathVariable userId: UUID,
@@ -84,7 +119,10 @@ class UserManagementController(
         val adjustedCharCount: Int,
     )
 
-    @AvailableCondition(phases = [SystemPhase.RECRUITMENT, SystemPhase.TRANSLATION, SystemPhase.SETTLEMENT], permissions = [SofiaPermission.ADMIN_LEVEL])
+    @AvailableCondition(
+        phases = [SystemPhase.RECRUITMENT, SystemPhase.TRANSLATION, SystemPhase.SETTLEMENT],
+        permissions = [SofiaPermission.ADMIN_LEVEL]
+    )
     @PostMapping("/{userId}/adjust-char-count")
     fun adjustCharCount(
         @PathVariable userId: UUID,
@@ -112,7 +150,10 @@ class UserManagementController(
         val role: SofiaUserRole,
     )
 
-    @AvailableCondition(phases = [SystemPhase.RECRUITMENT, SystemPhase.TRANSLATION, SystemPhase.SETTLEMENT], permissions = [SofiaPermission.ADMIN_LEVEL])
+    @AvailableCondition(
+        phases = [SystemPhase.RECRUITMENT, SystemPhase.TRANSLATION, SystemPhase.SETTLEMENT],
+        permissions = [SofiaPermission.ADMIN_LEVEL]
+    )
     @PostMapping("/{userId}/promote")
     fun promoteToAdmin(
         @PathVariable userId: UUID,
@@ -134,7 +175,10 @@ class UserManagementController(
         val role: SofiaUserRole,
     )
 
-    @AvailableCondition(phases = [SystemPhase.RECRUITMENT, SystemPhase.TRANSLATION, SystemPhase.SETTLEMENT], permissions = [SofiaPermission.ADMIN_LEVEL])
+    @AvailableCondition(
+        phases = [SystemPhase.RECRUITMENT, SystemPhase.TRANSLATION, SystemPhase.SETTLEMENT],
+        permissions = [SofiaPermission.ADMIN_LEVEL]
+    )
     @PostMapping("/{userId}/demote")
     fun demoteFromAdmin(
         @PathVariable userId: UUID,
