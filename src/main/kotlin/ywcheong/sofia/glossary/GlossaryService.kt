@@ -44,9 +44,9 @@ class GlossaryService(
     @Transactional(readOnly = true)
     fun search(keyword: String): List<GlossaryEntry> {
         logger.debug { "사전 검색: keyword=$keyword" }
-        return glossaryRepository.findByKoreanTermContainingIgnoreCase(
-            keyword
-        )
+        // 검색어도 공백 제거 + 소문자 변환하여 processedKoreanTerm과 매칭
+        val processedKeyword = keyword.filter { !it.isWhitespace() }.lowercase()
+        return glossaryRepository.findByProcessedKoreanTermContainingIgnoreCase(processedKeyword)
     }
 
     /**
@@ -57,7 +57,7 @@ class GlossaryService(
         validateTermLength(command.koreanTerm, command.englishTerm)
 
         val entry = GlossaryEntry(
-            koreanTerm = command.koreanTerm,
+            originalKoreanTerm = command.koreanTerm,
             englishTerm = command.englishTerm,
         )
         return glossaryRepository.save(entry)
@@ -75,7 +75,7 @@ class GlossaryService(
 
         return GlossaryEntry(
             id = existingEntry.id,
-            koreanTerm = command.koreanTerm,
+            originalKoreanTerm = command.koreanTerm,
             englishTerm = command.englishTerm,
         ).also { glossaryRepository.save(it) }
     }
@@ -98,9 +98,12 @@ class GlossaryService(
     fun autoMap(text: String): List<MappedTerm> {
         logger.debug { "사전 자동 매핑: text length=${text.length}" }
 
+        // 텍스트도 공백 제거 + 소문자 변환하여 processedKoreanTerm과 매칭
+        val processedText = text.filter { !it.isWhitespace() }.lowercase()
+
         return glossaryRepository.findAll()
-            .filter { text.contains(it.koreanTerm) }
-            .map { MappedTerm(it.koreanTerm, it.englishTerm) }
+            .filter { processedText.contains(it.processedKoreanTerm) }
+            .map { MappedTerm(it.originalKoreanTerm, it.englishTerm) }
     }
 
     private fun validateTermLength(koreanTerm: String, englishTerm: String) {

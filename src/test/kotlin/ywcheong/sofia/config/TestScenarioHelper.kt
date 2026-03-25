@@ -81,7 +81,7 @@ class TestScenarioHelper(
      * 용어집 항목을 생성합니다.
      */
     fun createGlossaryEntry(koreanTerm: String, englishTerm: String): GlossaryEntry =
-        glossaryRepository.save(GlossaryEntry(koreanTerm = koreanTerm, englishTerm = englishTerm))
+        glossaryRepository.save(GlossaryEntry(originalKoreanTerm = koreanTerm, englishTerm = englishTerm))
 
     /**
      * 시스템 페이즈를 설정합니다.

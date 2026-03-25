@@ -8,14 +8,20 @@ import java.util.UUID
 @Entity
 class GlossaryEntry(
     id: UUID = UUID.randomUUID(),
-    koreanTerm: String,
+    originalKoreanTerm: String,
     englishTerm: String,
 ) {
     @Id
     val id: UUID = id
 
     @Column(length = 200, nullable = false)
-    var koreanTerm: String = koreanTerm
+    var originalKoreanTerm: String = originalKoreanTerm
+        protected set
+
+    @Column(length = 200, nullable = false)
+    var processedKoreanTerm: String = originalKoreanTerm
+        .filter { !it.isWhitespace() }
+        .lowercase()
         protected set
 
     @Column(length = 200, nullable = false)

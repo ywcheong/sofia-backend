@@ -286,5 +286,69 @@ class GlossaryTest(
                 jsonPath("$.length()") { value(0) }
             }
         }
+
+        @Test
+        fun `공백이 다른 용어도 매핑된다`() {
+            // given: "우리 학교"로 등록된 항목
+            helper.createGlossaryEntry(koreanTerm = "우리 학교", englishTerm = "Our School")
+
+            // when: "우리학교" (공백 없이)로 검색
+            val request = mapOf(
+                "text" to "우리학교에 갔습니다."
+            )
+
+            // then: 매핑 성공, 원본 표시용 용어 반환
+            mockMvc.post("/glossary/auto-map") {
+                contentType = MediaType.APPLICATION_JSON
+                content = objectMapper.writeValueAsString(request)
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.length()") { value(1) }
+                jsonPath("$[0].koreanTerm") { value("우리 학교") }
+                jsonPath("$[0].englishTerm") { value("Our School") }
+            }
+        }
+
+        @Test
+        fun `텍스트에 공백이 있어도 매핑된다`() {
+            // given: "우리학교"로 등록된 항목
+            helper.createGlossaryEntry(koreanTerm = "우리학교", englishTerm = "Our School")
+
+            // when: "우리 학교" (공백 있이) 텍스트로 검색
+            val request = mapOf(
+                "text" to "우리 학교에 갔습니다."
+            )
+
+            // then: 매핑 성공
+            mockMvc.post("/glossary/auto-map") {
+                contentType = MediaType.APPLICATION_JSON
+                content = objectMapper.writeValueAsString(request)
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.length()") { value(1) }
+                jsonPath("$[0].koreanTerm") { value("우리학교") }
+            }
+        }
+
+        @Test
+        fun `대소문자가 달라도 매핑된다`() {
+            // given: 영문이 섞인 용어
+            helper.createGlossaryEntry(koreanTerm = "API 서버", englishTerm = "API Server")
+
+            // when: 소문자로 검색
+            val request = mapOf(
+                "text" to "api 서버를 구축했습니다."
+            )
+
+            // then: 매핑 성공, 원본 표시용 용어 반환
+            mockMvc.post("/glossary/auto-map") {
+                contentType = MediaType.APPLICATION_JSON
+                content = objectMapper.writeValueAsString(request)
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.length()") { value(1) }
+                jsonPath("$[0].koreanTerm") { value("API 서버") }
+            }
+        }
     }
 }

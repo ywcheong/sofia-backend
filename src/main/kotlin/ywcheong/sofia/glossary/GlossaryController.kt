@@ -54,7 +54,7 @@ class GlossaryController(
         companion object {
             fun from(entry: GlossaryEntry) = EntryResponse(
                 id = entry.id,
-                koreanTerm = entry.koreanTerm,
+                koreanTerm = entry.originalKoreanTerm,
                 englishTerm = entry.englishTerm,
             )
         }

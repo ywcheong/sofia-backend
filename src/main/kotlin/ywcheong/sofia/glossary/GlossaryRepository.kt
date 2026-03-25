@@ -4,5 +4,5 @@ import org.springframework.data.jpa.repository.JpaRepository
 import java.util.*
 
 interface GlossaryRepository : JpaRepository<GlossaryEntry, UUID> {
-    fun findByKoreanTermContainingIgnoreCase(koreanTerm: String): List<GlossaryEntry>
+    fun findByProcessedKoreanTermContainingIgnoreCase(processedKoreanTerm: String): List<GlossaryEntry>
 }
