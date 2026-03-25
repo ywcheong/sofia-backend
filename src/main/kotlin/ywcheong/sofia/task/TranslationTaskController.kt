@@ -15,7 +15,10 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import ywcheong.sofia.aspect.AvailableCondition
+import ywcheong.sofia.commons.BusinessException
 import ywcheong.sofia.commons.PageResponse
+import ywcheong.sofia.commons.SortDirection
+import ywcheong.sofia.commons.SortRequest
 import ywcheong.sofia.phase.SystemPhase
 import ywcheong.sofia.user.auth.SofiaPermission
 import java.util.UUID
@@ -47,7 +50,7 @@ class TranslationTaskController(
 
     @AvailableCondition(phases = [SystemPhase.RECRUITMENT, SystemPhase.TRANSLATION, SystemPhase.SETTLEMENT], permissions = [SofiaPermission.ADMIN_LEVEL])
     @GetMapping
-    @Operation(summary = "과제 목록 조회", description = "과제 설명, 타입, 배정타입, 완료상태, 담당자로 필터링 가능")
+    @Operation(summary = "과제 목록 조회", description = "과제 설명, 타입, 배정타입, 완료상태, 담당자로 필터링 가능. 정렬 필드: id, assignedAt, completedAt, characterCount")
     fun findAllTasks(
         pageable: Pageable,
         @RequestParam(required = false) search: String?,
@@ -55,8 +58,13 @@ class TranslationTaskController(
         @RequestParam(required = false) assignmentType: TranslationTask.AssignmentType?,
         @RequestParam(required = false) completed: Boolean?,
         @RequestParam(required = false) assigneeId: UUID?,
+        @RequestParam(required = false) sortField: String?,
+        @RequestParam(required = false) sortDirection: SortDirection?,
     ): PageResponse<TaskSummaryResponse> {
-        logger.info { "과제 목록 조회 요청: page=${pageable.pageNumber}, size=${pageable.pageSize}, search=$search, taskType=$taskType, assignmentType=$assignmentType, completed=$completed, assigneeId=$assigneeId" }
+        logger.info { "과제 목록 조회 요청: page=${pageable.pageNumber}, size=${pageable.pageSize}, search=$search, taskType=$taskType, assignmentType=$assignmentType, completed=$completed, assigneeId=$assigneeId, sortField=$sortField, sortDirection=$sortDirection" }
+
+        val sortRequest = SortRequest(sortField, sortDirection)
+        sortRequest.validate()
 
         val condition = TranslationTaskService.FindAllTasksCondition(
             search = search,
@@ -66,7 +74,7 @@ class TranslationTaskController(
             assigneeId = assigneeId,
         )
 
-        return PageResponse.from(translationTaskService.findAllTasks(condition, pageable))
+        return PageResponse.from(translationTaskService.findAllTasks(condition, pageable, sortRequest))
     }
 
     // UC-003: 번역 과제 생성

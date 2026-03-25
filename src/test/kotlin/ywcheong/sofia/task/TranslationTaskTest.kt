@@ -360,6 +360,267 @@ class TranslationTaskTest(
     }
 
     @Nested
+    @DisplayName("GET /tasks - 정렬 기능")
+    inner class SortTasks {
+
+        @Test
+        fun `정렬 파라미터 없이 조회하면 기본 동작을 유지한다`() {
+            // given - 여러 과제 생성
+            val user = helper.createActiveStudent("25-600", "사용자A")
+            helper.createTranslationTask(TranslationTask.TaskType.GAONNURI_POST, "과제1", user)
+            helper.createTranslationTask(TranslationTask.TaskType.GAONNURI_POST, "과제2", user)
+
+            // when & then - 정렬 파라미터 없이 조회
+            mockMvc.get("/tasks?page=0&size=10") {
+                header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.content") { isArray() }
+                jsonPath("$.totalElements") { value(2) }
+            }
+        }
+
+        @Test
+        fun `배정 시간 오름차순 정렬로 조회한다`() {
+            // given - 시간 차이를 두고 과제 생성
+            val user = helper.createActiveStudent("25-601", "사용자B")
+            val task1 = helper.createTranslationTask(TranslationTask.TaskType.GAONNURI_POST, "과제A", user)
+            val task2 = helper.createTranslationTask(TranslationTask.TaskType.GAONNURI_POST, "과제B", user)
+            val task3 = helper.createTranslationTask(TranslationTask.TaskType.GAONNURI_POST, "과제C", user)
+
+            // assignedAt을 서로 다른 시간으로 설정
+            val now = java.time.Instant.now()
+            helper.setTaskAssignedAt(task1.id, now.minusSeconds(60 * 60)) // 1시간 전
+            helper.setTaskAssignedAt(task2.id, now.minusSeconds(30 * 60)) // 30분 전
+            helper.setTaskAssignedAt(task3.id, now.minusSeconds(15 * 60)) // 15분 전
+
+            // when & then - 배정 시간 오름차순 정렬 (오래된 순)
+            mockMvc.get("/tasks?page=0&size=10&sortField=assignedAt&sortDirection=ASC") {
+                header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.content.length()") { value(3) }
+                jsonPath("$.content[0].taskDescription") { value("과제A") }
+                jsonPath("$.content[1].taskDescription") { value("과제B") }
+                jsonPath("$.content[2].taskDescription") { value("과제C") }
+            }
+        }
+
+        @Test
+        fun `배정 시간 내림차순 정렬로 조회한다`() {
+            // given - 시간 차이를 두고 과제 생성
+            val user = helper.createActiveStudent("25-602", "사용자C")
+            val task1 = helper.createTranslationTask(TranslationTask.TaskType.GAONNURI_POST, "과제D", user)
+            val task2 = helper.createTranslationTask(TranslationTask.TaskType.GAONNURI_POST, "과제E", user)
+            val task3 = helper.createTranslationTask(TranslationTask.TaskType.GAONNURI_POST, "과제F", user)
+
+            // assignedAt을 서로 다른 시간으로 설정
+            val now = java.time.Instant.now()
+            helper.setTaskAssignedAt(task1.id, now.minusSeconds(60 * 60)) // 1시간 전
+            helper.setTaskAssignedAt(task2.id, now.minusSeconds(30 * 60)) // 30분 전
+            helper.setTaskAssignedAt(task3.id, now.minusSeconds(15 * 60)) // 15분 전
+
+            // when & then - 배정 시간 내림차순 정렬 (최신순)
+            mockMvc.get("/tasks?page=0&size=10&sortField=assignedAt&sortDirection=DESC") {
+                header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.content.length()") { value(3) }
+                jsonPath("$.content[0].taskDescription") { value("과제F") }
+                jsonPath("$.content[1].taskDescription") { value("과제E") }
+                jsonPath("$.content[2].taskDescription") { value("과제D") }
+            }
+        }
+
+        @Test
+        fun `완료 시간 오름차순 정렬로 조회한다`() {
+            // given - 완료 시간이 다른 과제들 생성
+            val user = helper.createActiveStudent("25-603", "사용자D")
+            val task1 = helper.createTranslationTask(TranslationTask.TaskType.GAONNURI_POST, "완료과제A", user)
+            val task2 = helper.createTranslationTask(TranslationTask.TaskType.GAONNURI_POST, "완료과제B", user)
+            val task3 = helper.createTranslationTask(TranslationTask.TaskType.GAONNURI_POST, "완료과제C", user)
+
+            // 각 과제를 완료 처리하되, 완료 시간을 다르게 설정
+            val now = java.time.Instant.now()
+            completeTask(task1.id, 500)
+            helper.setTaskCompletedAt(task1.id, now.minusSeconds(120 * 60), 500) // 2시간 전
+
+            completeTask(task2.id, 600)
+            helper.setTaskCompletedAt(task2.id, now.minusSeconds(60 * 60), 600) // 1시간 전
+
+            completeTask(task3.id, 700)
+            helper.setTaskCompletedAt(task3.id, now.minusSeconds(30 * 60), 700) // 30분 전
+
+            // when & then - 완료 시간 오름차순 정렬 (오래된 순) + 완료된 과제만
+            mockMvc.get("/tasks?page=0&size=10&completed=true&sortField=completedAt&sortDirection=ASC") {
+                header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.content.length()") { value(3) }
+                jsonPath("$.content[0].taskDescription") { value("완료과제A") }
+                jsonPath("$.content[1].taskDescription") { value("완료과제B") }
+                jsonPath("$.content[2].taskDescription") { value("완료과제C") }
+            }
+        }
+
+        @Test
+        fun `완료 시간 내림차순 정렬로 조회한다`() {
+            // given - 완료 시간이 다른 과제들 생성
+            val user = helper.createActiveStudent("25-604", "사용자E")
+            val task1 = helper.createTranslationTask(TranslationTask.TaskType.GAONNURI_POST, "완료과제D", user)
+            val task2 = helper.createTranslationTask(TranslationTask.TaskType.GAONNURI_POST, "완료과제E", user)
+            val task3 = helper.createTranslationTask(TranslationTask.TaskType.GAONNURI_POST, "완료과제F", user)
+
+            // 각 과제를 완료 처리하되, 완료 시간을 다르게 설정
+            val now = java.time.Instant.now()
+            completeTask(task1.id, 500)
+            helper.setTaskCompletedAt(task1.id, now.minusSeconds(120 * 60), 500) // 2시간 전
+
+            completeTask(task2.id, 600)
+            helper.setTaskCompletedAt(task2.id, now.minusSeconds(60 * 60), 600) // 1시간 전
+
+            completeTask(task3.id, 700)
+            helper.setTaskCompletedAt(task3.id, now.minusSeconds(30 * 60), 700) // 30분 전
+
+            // when & then - 완료 시간 내림차순 정렬 (최신순) + 완료된 과제만
+            mockMvc.get("/tasks?page=0&size=10&completed=true&sortField=completedAt&sortDirection=DESC") {
+                header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.content.length()") { value(3) }
+                jsonPath("$.content[0].taskDescription") { value("완료과제F") }
+                jsonPath("$.content[1].taskDescription") { value("완료과제E") }
+                jsonPath("$.content[2].taskDescription") { value("완료과제D") }
+            }
+        }
+
+        @Test
+        fun `글자 수 오름차순 정렬로 조회한다`() {
+            // given - 글자 수가 다른 완료된 과제들 생성
+            val user = helper.createActiveStudent("25-605", "사용자F")
+            val task1 = helper.createTranslationTask(TranslationTask.TaskType.GAONNURI_POST, "자수과제A", user)
+            val task2 = helper.createTranslationTask(TranslationTask.TaskType.GAONNURI_POST, "자수과제B", user)
+            val task3 = helper.createTranslationTask(TranslationTask.TaskType.GAONNURI_POST, "자수과제C", user)
+
+            // 각 과제를 서로 다른 글자 수로 완료 처리
+            completeTask(task1.id, 1500)
+            completeTask(task2.id, 500)
+            completeTask(task3.id, 1000)
+
+            // when & then - 글자 수 오름차순 정렬 + 완료된 과제만
+            mockMvc.get("/tasks?page=0&size=10&completed=true&sortField=characterCount&sortDirection=ASC") {
+                header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.content.length()") { value(3) }
+                jsonPath("$.content[0].taskDescription") { value("자수과제B") } // 500
+                jsonPath("$.content[1].taskDescription") { value("자수과제C") } // 1000
+                jsonPath("$.content[2].taskDescription") { value("자수과제A") } // 1500
+            }
+        }
+
+        @Test
+        fun `글자 수 내림차순 정렬로 조회한다`() {
+            // given - 글자 수가 다른 완료된 과제들 생성
+            val user = helper.createActiveStudent("25-606", "사용자G")
+            val task1 = helper.createTranslationTask(TranslationTask.TaskType.GAONNURI_POST, "자수과제D", user)
+            val task2 = helper.createTranslationTask(TranslationTask.TaskType.GAONNURI_POST, "자수과제E", user)
+            val task3 = helper.createTranslationTask(TranslationTask.TaskType.GAONNURI_POST, "자수과제F", user)
+
+            // 각 과제를 서로 다른 글자 수로 완료 처리
+            completeTask(task1.id, 2000)
+            completeTask(task2.id, 800)
+            completeTask(task3.id, 1200)
+
+            // when & then - 글자 수 내림차순 정렬 + 완료된 과제만
+            mockMvc.get("/tasks?page=0&size=10&completed=true&sortField=characterCount&sortDirection=DESC") {
+                header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.content.length()") { value(3) }
+                jsonPath("$.content[0].taskDescription") { value("자수과제D") } // 2000
+                jsonPath("$.content[1].taskDescription") { value("자수과제F") } // 1200
+                jsonPath("$.content[2].taskDescription") { value("자수과제E") } // 800
+            }
+        }
+
+        @Test
+        fun `지원하지 않는 필드로 정렬 요청 시 400 에러를 반환한다`() {
+            // given
+            val user = helper.createActiveStudent("25-607", "사용자H")
+            helper.createTranslationTask(TranslationTask.TaskType.GAONNURI_POST, "과제", user)
+
+            // when & then - 지원하지 않는 필드로 정렬
+            mockMvc.get("/tasks?page=0&size=10&sortField=invalidField&sortDirection=ASC") {
+                header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+            }.andExpect {
+                status { isBadRequest() }
+            }
+        }
+
+        @Test
+        fun `정렬 필드 없이 방향만 지정하면 400 에러를 반환한다`() {
+            // given
+            val user = helper.createActiveStudent("25-608", "사용자I")
+            helper.createTranslationTask(TranslationTask.TaskType.GAONNURI_POST, "과제", user)
+
+            // when & then - 정렬 필드 없이 방향만 지정
+            mockMvc.get("/tasks?page=0&size=10&sortDirection=DESC") {
+                header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+            }.andExpect {
+                status { isBadRequest() }
+            }
+        }
+
+        @Test
+        fun `정렬과 조건 검색을 조합한다 - 완료된 과제 중 글자 수 내림차순`() {
+            // given - 완료/미완료 혼재
+            val user = helper.createActiveStudent("25-609", "사용자J")
+            val task1 = helper.createTranslationTask(TranslationTask.TaskType.GAONNURI_POST, "완료1", user)
+            val task2 = helper.createTranslationTask(TranslationTask.TaskType.GAONNURI_POST, "완료2", user)
+            val task3 = helper.createTranslationTask(TranslationTask.TaskType.GAONNURI_POST, "미완료", user)
+
+            completeTask(task1.id, 1000)
+            completeTask(task2.id, 2000)
+            // task3은 미완료
+
+            // when & then - 완료된 과제만 + 글자 수 내림차순 정렬
+            mockMvc.get("/tasks?page=0&size=10&completed=true&sortField=characterCount&sortDirection=DESC") {
+                header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.content.length()") { value(2) }
+                jsonPath("$.content[0].taskDescription") { value("완료2") } // 2000
+                jsonPath("$.content[1].taskDescription") { value("완료1") } // 1000
+            }
+        }
+
+        @Test
+        fun `정렬과 과제 타입 필터를 조합한다`() {
+            // given - 여러 타입의 과제 생성
+            val user = helper.createActiveStudent("25-610", "사용자K")
+            val task1 = helper.createTranslationTask(TranslationTask.TaskType.GAONNURI_POST, "가온A", user)
+            val task2 = helper.createTranslationTask(TranslationTask.TaskType.GAONNURI_POST, "가온B", user)
+            helper.createTranslationTask(TranslationTask.TaskType.EXTERNAL_POST, "외부과제", user)
+
+            // assignedAt 설정 (시간 차이)
+            val now = java.time.Instant.now()
+            helper.setTaskAssignedAt(task1.id, now.minusSeconds(60 * 60))
+            helper.setTaskAssignedAt(task2.id, now.minusSeconds(30 * 60))
+
+            // when & then - 가온누리 과제만 + 배정 시간 내림차순
+            mockMvc.get("/tasks?page=0&size=10&taskType=GAONNURI_POST&sortField=assignedAt&sortDirection=DESC") {
+                header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.content.length()") { value(2) }
+                jsonPath("$.content[0].taskDescription") { value("가온B") }
+                jsonPath("$.content[1].taskDescription") { value("가온A") }
+            }
+        }
+    }
+
+    @Nested
     @DisplayName("POST /tasks - 과제 생성")
     inner class CreateTask {
 

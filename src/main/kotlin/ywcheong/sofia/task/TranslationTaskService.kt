@@ -3,12 +3,15 @@ package ywcheong.sofia.task
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.persistence.criteria.Predicate
 import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
 import org.springframework.data.jpa.domain.Specification
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import ywcheong.sofia.commons.BusinessException
+import ywcheong.sofia.commons.SortRequest
 import ywcheong.sofia.email.EmailProperties
 import ywcheong.sofia.email.EmailSendService
 import ywcheong.sofia.email.templates.TaskAssignmentEmailTemplate
@@ -43,9 +46,14 @@ class TranslationTaskService(
         val assigneeId: UUID?,
     )
 
-    fun findAllTasks(condition: FindAllTasksCondition, pageable: Pageable): Page<TranslationTaskController.TaskSummaryResponse> {
+    companion object {
+        private val ALLOWED_SORT_FIELDS = setOf("id", "assignedAt", "completedAt", "characterCount")
+    }
+
+    fun findAllTasks(condition: FindAllTasksCondition, pageable: Pageable, sortRequest: SortRequest): Page<TranslationTaskController.TaskSummaryResponse> {
         val spec = createTaskFilterSpecification(condition)
-        return translationTaskRepository.findAll(spec, pageable).map { task ->
+        val pageableWithSort = applySort(pageable, sortRequest)
+        return translationTaskRepository.findAll(spec, pageableWithSort).map { task ->
             TranslationTaskController.TaskSummaryResponse(
                 id = task.id,
                 taskType = task.taskType,
@@ -61,6 +69,21 @@ class TranslationTaskService(
                 remindedAt = task.remindedAt?.let { formatDateTime(it) },
             )
         }
+    }
+
+    private fun applySort(pageable: Pageable, sortRequest: SortRequest): Pageable {
+        if (sortRequest.isDefault()) {
+            return pageable
+        }
+
+        val sortField = sortRequest.sortField!!
+        if (sortField !in ALLOWED_SORT_FIELDS) {
+            throw BusinessException("지원하지 않는 정렬 필드입니다: $sortField")
+        }
+
+        val sortDirection = sortRequest.sortDirection!!.toSortDirection()
+        val sort = Sort.by(sortDirection, sortField)
+        return PageRequest.of(pageable.pageNumber, pageable.pageSize, sort)
     }
 
     private fun createTaskFilterSpecification(condition: FindAllTasksCondition): Specification<TranslationTask> {

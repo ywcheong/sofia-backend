@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import ywcheong.sofia.aspect.AvailableCondition
 import ywcheong.sofia.commons.PageResponse
+import ywcheong.sofia.commons.SortDirection
+import ywcheong.sofia.commons.SortRequest
 import ywcheong.sofia.config.security.CurrentUser
 import ywcheong.sofia.phase.SystemPhase
 import ywcheong.sofia.user.auth.SofiaPermission
@@ -44,14 +46,24 @@ class UserManagementController(
         permissions = [SofiaPermission.ADMIN_LEVEL]
     )
     @GetMapping
-    @Operation(summary = "사용자 목록 조회", description = "search는 학번+이름 부분검색, role/rest는 선택적 필터")
+    @Operation(
+        summary = "사용자 목록 조회",
+        description = "search는 학번+이름 부분검색, role/rest는 선택적 필터. " +
+            "sortField: id, studentNumber, studentName, role, rest, warningCount, totalCharCount 중 하나. " +
+            "sortDirection: ASC 또는 DESC"
+    )
     fun findAllUsers(
         pageable: Pageable,
         @RequestParam(required = false) search: String?,
         @RequestParam(required = false) role: SofiaUserRole?,
         @RequestParam(required = false) rest: Boolean?,
+        @RequestParam(required = false) sortField: String?,
+        @RequestParam(required = false) sortDirection: SortDirection?,
     ): PageResponse<UserSummaryResponse> {
-        logger.info { "사용자 목록 조회 요청: page=${pageable.pageNumber}, size=${pageable.pageSize}, search=$search, role=$role, rest=$rest" }
+        logger.info {
+            "사용자 목록 조회 요청: page=${pageable.pageNumber}, size=${pageable.pageSize}, " +
+                "search=$search, role=$role, rest=$rest, sortField=$sortField, sortDirection=$sortDirection"
+        }
 
         val condition = UserManagementService.FindAllUsersCondition(
             search = search,
@@ -59,7 +71,8 @@ class UserManagementController(
             rest = rest,
         )
 
-        val resultPage = userManagementService.findAllUsers(condition, pageable)
+        val sortRequest = SortRequest(sortField, sortDirection)
+        val resultPage = userManagementService.findAllUsers(condition, sortRequest, pageable)
 
         return PageResponse.from(resultPage.map { result ->
             UserSummaryResponse(

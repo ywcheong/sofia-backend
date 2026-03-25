@@ -233,6 +233,416 @@ class UserManagementTest(
     }
 
     @Nested
+    @DisplayName("GET /users - 정렬 기능")
+    inner class SortUsers {
+
+        @Test
+        fun `정렬 파라미터 없이 조회하면 기본 동작을 유지한다`() {
+            // given - 여러 사용자 생성
+            helper.createActiveStudent("25-300", "가나다")
+            helper.createActiveStudent("25-301", "라마바")
+
+            // when & then - 정렬 파라미터 없이 조회
+            mockMvc.get("/users?page=0&size=10") {
+                header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.content") { isArray() }
+            }
+        }
+
+        @Test
+        fun `학번 오름차순 정렬로 조회한다`() {
+            // given - 역순으로 생성해도 정렬되어야 함
+            helper.createActiveStudent("25-320", "사용자C")
+            helper.createActiveStudent("25-310", "사용자B")
+            helper.createActiveStudent("25-300", "사용자A")
+
+            // when & then - 학번 오름차순 정렬
+            mockMvc.get("/users?page=0&size=10&sortField=studentNumber&sortDirection=ASC") {
+                header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.content[0].studentNumber") { value("25-300") }
+                jsonPath("$.content[1].studentNumber") { value("25-310") }
+                jsonPath("$.content[2].studentNumber") { value("25-320") }
+            }
+        }
+
+        @Test
+        fun `학번 내림차순 정렬로 조회한다`() {
+            // given
+            helper.createActiveStudent("25-330", "사용자A")
+            helper.createActiveStudent("25-340", "사용자B")
+            helper.createActiveStudent("25-350", "사용자C")
+
+            // when & then - 학번 내림차순 정렬
+            mockMvc.get("/users?page=0&size=10&sortField=studentNumber&sortDirection=DESC") {
+                header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.content[0].studentNumber") { value("admin") } // 관리자가 먼저 (문자열 DESC)
+            }
+        }
+
+        @Test
+        fun `이름 오름차순 정렬로 조회한다`() {
+            // given - 가나다순이 아닌 이름으로 생성
+            helper.createActiveStudent("25-400", "박민수")
+            helper.createActiveStudent("25-401", "김철수")
+            helper.createActiveStudent("25-402", "이영희")
+
+            // when & then - 이름 오름차순 정렬 (관리자, 김철수, 박민수, 이영희 - 한글 자음 순서)
+            mockMvc.get("/users?page=0&size=10&sortField=studentName&sortDirection=ASC") {
+                header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+            }.andExpect {
+                status { isOk() }
+                // 관리자(ㄱ) < 김철수(ㄱ) < 박민수(ㅂ) < 이영희(ㅇ)
+                jsonPath("$.content[0].studentName") { value("관리자") }
+                jsonPath("$.content[1].studentName") { value("김철수") }
+                jsonPath("$.content[2].studentName") { value("박민수") }
+                jsonPath("$.content[3].studentName") { value("이영희") }
+            }
+        }
+
+        @Test
+        fun `이름 내림차순 정렬로 조회한다`() {
+            // given - 한글 자음 순서: 관리자(ㄱ) < 가가가(ㄱ) < 나나나(ㄴ) < 다다다(ㄷ)
+            // 역순: 다다다 > 나나나 > 관리자 > 가가가 (관리자와 가가가의 ㄱ 순서 문제로 인해)
+            helper.createActiveStudent("25-410", "가가가")
+            helper.createActiveStudent("25-411", "나나나")
+            helper.createActiveStudent("25-412", "다다다")
+
+            // when & then - 이름 내림차순 정렬 (다다다 > 나나나 > ?)
+            mockMvc.get("/users?page=0&size=10&sortField=studentName&sortDirection=DESC") {
+                header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.content[0].studentName") { value("다다다") }
+                jsonPath("$.content[1].studentName") { value("나나나") }
+                // 관리자와 가가가 순서는 DB 정렬 규칙에 따라 달라질 수 있음
+                jsonPath("$.content.length()") { value(4) }
+            }
+        }
+
+        @Test
+        fun `경고 횟수 오름차순 정렬로 조회한다`() {
+            // given - 사용자 생성 후 경고 횟수 설정을 위해 과제 미완료 상황 시뮬레이션 불가하므로
+            // 기본값(0)으로 생성된 사용자들로 테스트
+            helper.createActiveStudent("25-420", "사용자A")
+            helper.createActiveStudent("25-421", "사용자B")
+            helper.createActiveStudent("25-422", "사용자C")
+
+            // when & then - 경고 횟수 오름차순 정렬
+            mockMvc.get("/users?page=0&size=10&sortField=warningCount&sortDirection=ASC") {
+                header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.content") { isArray() }
+            }
+        }
+
+        @Test
+        fun `경고 횟수 내림차순 정렬로 조회한다`() {
+            // given
+            helper.createActiveStudent("25-430", "사용자A")
+            helper.createActiveStudent("25-431", "사용자B")
+
+            // when & then - 경고 횟수 내림차순 정렬
+            mockMvc.get("/users?page=0&size=10&sortField=warningCount&sortDirection=DESC") {
+                header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.content") { isArray() }
+            }
+        }
+
+        @Test
+        fun `권한 오름차순 정렬로 조회한다`() {
+            // given - 관리자와 학생 혼재
+            helper.createActiveStudent("25-440", "학생A")
+            helper.createActiveStudent("25-441", "학생B")
+            helper.createAdminAndGetToken("admin-sort-asc", "관리자A")
+
+            // when & then - 권한 오름차순 정렬 (ADMIN < STUDENT)
+            mockMvc.get("/users?page=0&size=10&sortField=role&sortDirection=ASC") {
+                header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.content[0].role") { value("ADMIN") }
+                jsonPath("$.content[1].role") { value("ADMIN") }
+                jsonPath("$.content[2].role") { value("STUDENT") }
+                jsonPath("$.content[3].role") { value("STUDENT") }
+            }
+        }
+
+        @Test
+        fun `권한 내림차순 정렬로 조회한다`() {
+            // given - 관리자와 학생 혼재
+            helper.createActiveStudent("25-450", "학생C")
+            helper.createActiveStudent("25-451", "학생D")
+            helper.createAdminAndGetToken("admin-sort-desc", "관리자B")
+
+            // when & then - 권한 내림차순 정렬 (STUDENT > ADMIN)
+            mockMvc.get("/users?page=0&size=10&sortField=role&sortDirection=DESC") {
+                header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.content[0].role") { value("STUDENT") }
+                jsonPath("$.content[1].role") { value("STUDENT") }
+                jsonPath("$.content[2].role") { value("ADMIN") }
+                jsonPath("$.content[3].role") { value("ADMIN") }
+            }
+        }
+
+        @Test
+        fun `휴식 상태 오름차순 정렬로 조회한다`() {
+            // given - 활성 사용자와 휴식 사용자 혼재
+            helper.createActiveStudent("25-460", "활성A")
+            helper.createActiveStudent("25-461", "활성B")
+            val restingUser = helper.createActiveStudent("25-462", "휴식A")
+            helper.setUserResting(restingUser.id, true)
+
+            // when & then - 휴식 상태 오름차순 정렬 (false=활성 < true=휴식)
+            mockMvc.get("/users?page=0&size=10&sortField=rest&sortDirection=ASC") {
+                header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.content[0].rest") { value(false) }
+                jsonPath("$.content[1].rest") { value(false) }
+                jsonPath("$.content[2].rest") { value(true) }
+                jsonPath("$.content[3].rest") { value(true) } // adminInfo도 휴식 상태
+            }
+        }
+
+        @Test
+        fun `휴식 상태 내림차순 정렬로 조회한다`() {
+            // given - 활성 사용자와 휴식 사용자 혼재
+            helper.createActiveStudent("25-470", "활성C")
+            helper.createActiveStudent("25-471", "활성D")
+            val restingUser = helper.createActiveStudent("25-472", "휴식B")
+            helper.setUserResting(restingUser.id, true)
+
+            // when & then - 휴식 상태 내림차순 정렬 (true=휴식 > false=활성)
+            mockMvc.get("/users?page=0&size=10&sortField=rest&sortDirection=DESC") {
+                header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.content[0].rest") { value(true) }
+                jsonPath("$.content[1].rest") { value(true) } // adminInfo도 휴식 상태
+                jsonPath("$.content[2].rest") { value(false) }
+                jsonPath("$.content[3].rest") { value(false) }
+            }
+        }
+
+        @Test
+        fun `총 자수로 오름차순 정렬한다 - completedCharCount와 adjustedCharCount 합산`() {
+            // given - 3명의 사용자 생성, 각각 다른 자수 부여
+            // 사용자 A: completedCharCount=1000, adjustedCharCount=500 -> total=1500
+            val userA = helper.createActiveStudent("25-500", "사용자A")
+            val taskA = helper.createTranslationTask(
+                taskType = ywcheong.sofia.task.TranslationTask.TaskType.GAONNURI_POST,
+                taskDescription = "과제A",
+                assignee = userA
+            )
+            completeTask(taskA.id, 1000)
+            adjustCharCount(userA.id, 500)
+
+            // 사용자 B: completedCharCount=2000, adjustedCharCount=0 -> total=2000
+            val userB = helper.createActiveStudent("25-501", "사용자B")
+            val taskB = helper.createTranslationTask(
+                taskType = ywcheong.sofia.task.TranslationTask.TaskType.GAONNURI_POST,
+                taskDescription = "과제B",
+                assignee = userB
+            )
+            completeTask(taskB.id, 2000)
+
+            // 사용자 C: completedCharCount=500, adjustedCharCount=300 -> total=800
+            val userC = helper.createActiveStudent("25-502", "사용자C")
+            val taskC = helper.createTranslationTask(
+                taskType = ywcheong.sofia.task.TranslationTask.TaskType.GAONNURI_POST,
+                taskDescription = "과제C",
+                assignee = userC
+            )
+            completeTask(taskC.id, 500)
+            adjustCharCount(userC.id, 300)
+
+            // when & then - 총 자수 오름차순 정렬: C(800) -> A(1500) -> B(2000)
+            mockMvc.get("/users?page=0&size=10&role=STUDENT&sortField=totalCharCount&sortDirection=ASC") {
+                header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.content.length()") { value(3) }
+                jsonPath("$.content[0].studentName") { value("사용자C") }
+                jsonPath("$.content[0].totalCharCount") { value(800) }
+                jsonPath("$.content[1].studentName") { value("사용자A") }
+                jsonPath("$.content[1].totalCharCount") { value(1500) }
+                jsonPath("$.content[2].studentName") { value("사용자B") }
+                jsonPath("$.content[2].totalCharCount") { value(2000) }
+            }
+        }
+
+        @Test
+        fun `총 자수로 내림차순 정렬한다 - completedCharCount와 adjustedCharCount 합산`() {
+            // given - 3명의 사용자 생성, 각각 다른 자수 부여
+            // 사용자 A: completedCharCount=1000, adjustedCharCount=500 -> total=1500
+            val userA = helper.createActiveStudent("25-510", "사용자A")
+            val taskA = helper.createTranslationTask(
+                taskType = ywcheong.sofia.task.TranslationTask.TaskType.GAONNURI_POST,
+                taskDescription = "과제A",
+                assignee = userA
+            )
+            completeTask(taskA.id, 1000)
+            adjustCharCount(userA.id, 500)
+
+            // 사용자 B: completedCharCount=2000, adjustedCharCount=0 -> total=2000
+            val userB = helper.createActiveStudent("25-511", "사용자B")
+            val taskB = helper.createTranslationTask(
+                taskType = ywcheong.sofia.task.TranslationTask.TaskType.GAONNURI_POST,
+                taskDescription = "과제B",
+                assignee = userB
+            )
+            completeTask(taskB.id, 2000)
+
+            // 사용자 C: completedCharCount=500, adjustedCharCount=300 -> total=800
+            val userC = helper.createActiveStudent("25-512", "사용자C")
+            val taskC = helper.createTranslationTask(
+                taskType = ywcheong.sofia.task.TranslationTask.TaskType.GAONNURI_POST,
+                taskDescription = "과제C",
+                assignee = userC
+            )
+            completeTask(taskC.id, 500)
+            adjustCharCount(userC.id, 300)
+
+            // when & then - 총 자수 내림차순 정렬: B(2000) -> A(1500) -> C(800)
+            mockMvc.get("/users?page=0&size=10&role=STUDENT&sortField=totalCharCount&sortDirection=DESC") {
+                header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.content.length()") { value(3) }
+                jsonPath("$.content[0].studentName") { value("사용자B") }
+                jsonPath("$.content[0].totalCharCount") { value(2000) }
+                jsonPath("$.content[1].studentName") { value("사용자A") }
+                jsonPath("$.content[1].totalCharCount") { value(1500) }
+                jsonPath("$.content[2].studentName") { value("사용자C") }
+                jsonPath("$.content[2].totalCharCount") { value(800) }
+            }
+        }
+
+        @Test
+        fun `총 자수 정렬 - 보정 자수만 있는 사용자도 올바르게 정렬된다`() {
+            // given - 완료 과제는 없지만 보정 자수만 있는 사용자
+            // 사용자 D: completedCharCount=0, adjustedCharCount=100 -> total=100
+            val userD = helper.createActiveStudent("25-520", "사용자D")
+            adjustCharCount(userD.id, 100)
+
+            // 사용자 E: completedCharCount=0, adjustedCharCount=500 -> total=500
+            val userE = helper.createActiveStudent("25-521", "사용자E")
+            adjustCharCount(userE.id, 500)
+
+            // 사용자 F: completedCharCount=0, adjustedCharCount=50 -> total=50
+            val userF = helper.createActiveStudent("25-522", "사용자F")
+            adjustCharCount(userF.id, 50)
+
+            // when & then - 총 자수 오름차순 정렬: F(50) -> D(100) -> E(500)
+            mockMvc.get("/users?page=0&size=10&role=STUDENT&sortField=totalCharCount&sortDirection=ASC") {
+                header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.content.length()") { value(3) }
+                jsonPath("$.content[0].studentName") { value("사용자F") }
+                jsonPath("$.content[0].totalCharCount") { value(50) }
+                jsonPath("$.content[1].studentName") { value("사용자D") }
+                jsonPath("$.content[1].totalCharCount") { value(100) }
+                jsonPath("$.content[2].studentName") { value("사용자E") }
+                jsonPath("$.content[2].totalCharCount") { value(500) }
+            }
+        }
+
+        @Test
+        fun `지원하지 않는 필드로 정렬 요청 시 400 에러를 반환한다`() {
+            // given
+            helper.createActiveStudent("25-600", "사용자")
+
+            // when & then - 지원하지 않는 필드로 정렬
+            mockMvc.get("/users?page=0&size=10&sortField=invalidField&sortDirection=ASC") {
+                header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+            }.andExpect {
+                status { isBadRequest() }
+            }
+        }
+
+        @Test
+        fun `정렬 필드 없이 방향만 지정하면 400 에러를 반환한다`() {
+            // given
+            helper.createActiveStudent("25-601", "사용자")
+
+            // when & then - 정렬 필드 없이 방향만 지정
+            mockMvc.get("/users?page=0&size=10&sortDirection=DESC") {
+                header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+            }.andExpect {
+                status { isBadRequest() }
+            }
+        }
+
+        @Test
+        fun `정렬과 조건 검색을 조합한다 - 학생 중 총 자수 내림차순`() {
+            // given - 학생과 관리자 혼재, 각각 다른 자수
+            val studentA = helper.createActiveStudent("25-700", "학생A")
+            val taskA = helper.createTranslationTask(
+                taskType = ywcheong.sofia.task.TranslationTask.TaskType.GAONNURI_POST,
+                taskDescription = "과제A",
+                assignee = studentA
+            )
+            completeTask(taskA.id, 3000)
+
+            val studentB = helper.createActiveStudent("25-701", "학생B")
+            val taskB = helper.createTranslationTask(
+                taskType = ywcheong.sofia.task.TranslationTask.TaskType.GAONNURI_POST,
+                taskDescription = "과제B",
+                assignee = studentB
+            )
+            completeTask(taskB.id, 1000)
+
+            // 관리자는 자수가 0
+            helper.createAdminAndGetToken("admin-sort", "관리자B")
+
+            // when & then - 학생만 필터링 + 총 자수 내림차순 정렬
+            mockMvc.get("/users?page=0&size=10&role=STUDENT&sortField=totalCharCount&sortDirection=DESC") {
+                header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.content.length()") { value(2) }
+                jsonPath("$.content[0].studentName") { value("학생A") }
+                jsonPath("$.content[0].totalCharCount") { value(3000) }
+                jsonPath("$.content[1].studentName") { value("학생B") }
+                jsonPath("$.content[1].totalCharCount") { value(1000) }
+            }
+        }
+
+        @Test
+        fun `정렬과 휴식 상태 필터를 조합한다 - 활성 사용자 중 이름 오름차순`() {
+            // given - 활성 사용자와 휴식 사용자 혼재
+            helper.createActiveStudent("25-710", "활성C")
+            helper.createActiveStudent("25-711", "활성A")
+            helper.createActiveStudent("25-712", "활성B")
+            val restingUser = helper.createActiveStudent("25-713", "휴식자")
+            helper.setUserResting(restingUser.id, true)
+
+            // when & then - 활성 사용자만 + 이름 오름차순 정렬
+            mockMvc.get("/users?page=0&size=10&rest=false&sortField=studentName&sortDirection=ASC") {
+                header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.content.length()") { value(3) }
+                jsonPath("$.content[0].studentName") { value("활성A") }
+                jsonPath("$.content[1].studentName") { value("활성B") }
+                jsonPath("$.content[2].studentName") { value("활성C") }
+            }
+        }
+    }
+
+    @Nested
     @DisplayName("POST /users/{userId}/rest - 개인 휴식 설정")
     inner class SetRestStatus {
 

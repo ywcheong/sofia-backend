@@ -233,6 +233,27 @@ class TestScenarioHelper(
     }
 
     /**
+     * 과제의 완료 시간과 글자 수를 설정합니다.
+     * 정렬 테스트 시나리오에 사용합니다.
+     */
+    fun setTaskCompletedAt(taskId: UUID, completedAt: java.time.Instant?, characterCount: Int? = null) {
+        val task = translationTaskRepository.findById(taskId).orElseThrow()
+        translationTaskRepository.save(
+            TranslationTask(
+                id = task.id,
+                taskType = task.taskType,
+                taskDescription = task.taskDescription,
+                assignee = task.assignee,
+                assignmentType = task.assignmentType,
+                assignedAt = task.assignedAt,
+                completedAt = completedAt,
+                characterCount = characterCount,
+                remindedAt = task.remindedAt,
+            )
+        )
+    }
+
+    /**
      * 사용자의 휴식 상태를 설정합니다.
      * 공개 API를 통하지 않고 직접 설정해야 하는 테스트 시나리오에 사용합니다.
      */
