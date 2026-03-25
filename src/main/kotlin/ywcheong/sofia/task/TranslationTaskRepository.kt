@@ -15,7 +15,7 @@ interface TranslationTaskRepository : JpaRepository<TranslationTask, UUID> {
     @Query("SELECT t FROM TranslationTask t WHERE t.completedAt IS NULL")
     fun findAllIncompleteTasks(): List<TranslationTask>
 
-    @Query("SELECT COALESCE(SUM(t.characterCount), 0) FROM TranslationTask t WHERE t.assignee = :assignee AND t.completedAt IS NOT NULL")
+    @Query("SELECT COALESCE(SUM(t.characterCount), 0) FROM TranslationTask t WHERE t.completedAt IS NOT NULL AND t.assignee = :assignee")
     fun sumCharacterCountByAssignee(assignee: ywcheong.sofia.user.SofiaUser): Int
 
     /**

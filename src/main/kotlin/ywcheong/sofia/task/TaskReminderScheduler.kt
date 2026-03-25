@@ -9,6 +9,7 @@ import ywcheong.sofia.email.EmailSendService
 import ywcheong.sofia.email.templates.TaskReminderAdminNotificationEmailTemplate
 import ywcheong.sofia.email.templates.TaskReminderEmailTemplate
 import ywcheong.sofia.user.SofiaUserRole
+import ywcheong.sofia.user.auth.SofiaUserAuth
 import ywcheong.sofia.user.auth.SofiaUserAuthRepository
 import java.time.Instant
 import java.time.ZoneId
@@ -50,7 +51,7 @@ class TaskReminderScheduler(
         for (task in tasksNeedingReminder) {
             sendReminderToAssignee(task)
             sendNotificationToAdmins(task, admins)
-            task.markReminded()
+            task.markAsReminded()
             translationTaskRepository.save(task)
         }
 
@@ -78,7 +79,7 @@ class TaskReminderScheduler(
         }
     }
 
-    private fun sendNotificationToAdmins(task: TranslationTask, admins: List<ywcheong.sofia.user.auth.SofiaUserAuth>) {
+    private fun sendNotificationToAdmins(task: TranslationTask, admins: List<SofiaUserAuth>) {
         val assignee = task.assignee
 
         for (adminAuth in admins) {
