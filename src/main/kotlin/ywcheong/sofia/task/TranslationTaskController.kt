@@ -4,7 +4,9 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PatchMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -126,5 +128,52 @@ class TranslationTaskController(
         return ResponseEntity.ok()
             .header("Content-Disposition", "attachment; filename=performance_report.csv")
             .body(csv)
+    }
+
+    // 담당자 변경
+    data class ChangeAssigneeRequest(
+        val newAssigneeId: UUID,
+    )
+
+    data class ChangeAssigneeResponse(
+        val taskId: UUID,
+        val newAssigneeId: UUID,
+        val newAssigneeStudentNumber: String,
+        val newAssigneeName: String,
+    )
+
+    @AvailableCondition(phases = [SystemPhase.TRANSLATION], permissions = [SofiaPermission.ADMIN_LEVEL])
+    @PatchMapping("/{taskId}/assignee")
+    fun changeAssignee(
+        @PathVariable taskId: UUID,
+        @RequestBody request: ChangeAssigneeRequest,
+    ): ChangeAssigneeResponse {
+        logger.info { "과제 담당자 변경 요청: taskId=$taskId, newAssigneeId=${request.newAssigneeId}" }
+
+        val command = TranslationTaskService.ChangeAssigneeCommand(
+            taskId = taskId,
+            newAssigneeId = request.newAssigneeId,
+        )
+
+        val task = translationTaskService.changeAssignee(command)
+
+        return ChangeAssigneeResponse(
+            taskId = task.id,
+            newAssigneeId = task.assignee.id,
+            newAssigneeStudentNumber = task.assignee.studentNumber,
+            newAssigneeName = task.assignee.studentName,
+        )
+    }
+
+    // 과제 삭제
+    @AvailableCondition(phases = [SystemPhase.TRANSLATION], permissions = [SofiaPermission.ADMIN_LEVEL])
+    @DeleteMapping("/{taskId}")
+    fun deleteTask(@PathVariable taskId: UUID): ResponseEntity<Unit> {
+        logger.info { "과제 삭제 요청: taskId=$taskId" }
+
+        val command = TranslationTaskService.DeleteTaskCommand(taskId)
+        translationTaskService.deleteTask(command)
+
+        return ResponseEntity.noContent().build()
     }
 }

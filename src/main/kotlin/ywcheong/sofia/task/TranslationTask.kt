@@ -25,10 +25,10 @@ class TranslationTask(
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assignee_id")
-    val assignee: SofiaUser,
+    var assignee: SofiaUser,
 
     @Enumerated(EnumType.STRING)
-    val assignmentType: AssignmentType,
+    var assignmentType: AssignmentType,
 
     val assignedAt: Instant = Instant.now(),
 
@@ -46,6 +46,12 @@ class TranslationTask(
 
     fun markAsReminded(at: Instant = Instant.now()) {
         this.remindedAt = at
+    }
+
+    fun changeAssignee(newAssignee: SofiaUser, newAssignmentType: AssignmentType) {
+        check(completedAt == null) { "완료된 과제는 담당자를 변경할 수 없습니다." }
+        this.assignee = newAssignee
+        this.assignmentType = newAssignmentType
     }
 
     enum class TaskType {

@@ -80,6 +80,15 @@ class TranslationTaskService(
         }
     }
 
+    data class ChangeAssigneeCommand(
+        val taskId: UUID,
+        val newAssigneeId: UUID,
+    )
+
+    data class DeleteTaskCommand(
+        val taskId: UUID,
+    )
+
     @Transactional
     fun createTask(command: CreateTaskCommand): TranslationTask {
         // BR-006: Work ID 중복 확인
@@ -151,6 +160,38 @@ class TranslationTaskService(
         logger.info { "과제 완료 보고: taskId=${command.taskId}, characterCount=${command.characterCount}, isLate=$late" }
 
         return savedTask
+    }
+
+    @Transactional
+    fun changeAssignee(command: ChangeAssigneeCommand): TranslationTask {
+        val task = translationTaskRepository.findByIdOrNull(command.taskId)
+            ?: throw BusinessException("존재하지 않는 과제입니다.")
+
+        if (task.completed) {
+            throw BusinessException("완료된 과제는 담당자를 변경할 수 없습니다.")
+        }
+
+        val newAssignee = resolveManualAssignee(command.newAssigneeId)
+
+        task.changeAssignee(newAssignee, TranslationTask.AssignmentType.MANUAL)
+        val savedTask = translationTaskRepository.save(task)
+
+        // 담당자 변경 알림 이메일 발송
+        sendTaskAssignmentEmail(savedTask, newAssignee)
+
+        logger.info { "과제 담당자 변경: taskId=${command.taskId}, newAssignee=${newAssignee.studentNumber}" }
+
+        return savedTask
+    }
+
+    @Transactional
+    fun deleteTask(command: DeleteTaskCommand) {
+        val task = translationTaskRepository.findByIdOrNull(command.taskId)
+            ?: throw BusinessException("존재하지 않는 과제입니다.")
+
+        translationTaskRepository.delete(task)
+
+        logger.info { "과제 삭제: taskId=${command.taskId}" }
     }
 
     // BR-012: 봉사시간 계산 (1글자 = 3.942초)

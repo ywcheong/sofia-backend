@@ -10,7 +10,9 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc
 import org.springframework.http.MediaType
 import org.springframework.test.context.TestConstructor
 import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.delete
 import org.springframework.test.web.servlet.get
+import org.springframework.test.web.servlet.patch
 import org.springframework.test.web.servlet.post
 import org.springframework.transaction.annotation.Transactional
 import tools.jackson.databind.ObjectMapper
@@ -534,6 +536,255 @@ class TranslationTaskTest(
             header("Authorization", helper.kakaoAuthHeader())
         }.andExpect {
             status { isOk() }
+        }
+    }
+
+    @Nested
+    @DisplayName("PATCH /tasks/{taskId}/assignee - 담당자 변경")
+    inner class ChangeAssignee {
+
+        @Test
+        fun `미완료 과제의 담당자를 변경하면 200과 새 담당자 정보를 반환한다`() {
+            // given - 과제와 새 담당자 생성
+            val originalAssignee = helper.createActiveStudent("25-400", "원래담당자")
+            val newAssignee = helper.createActiveStudent("25-401", "새담당자")
+            val task = helper.createTranslationTask(
+                TranslationTask.TaskType.GAONNURI_POST,
+                "담당자 변경 테스트 과제",
+                originalAssignee
+            )
+
+            val request = mapOf(
+                "newAssigneeId" to newAssignee.id.toString(),
+            )
+
+            // when & then
+            mockMvc.patch("/tasks/${task.id}/assignee") {
+                contentType = MediaType.APPLICATION_JSON
+                content = objectMapper.writeValueAsString(request)
+                header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.taskId") { value(task.id.toString()) }
+                jsonPath("$.newAssigneeId") { value(newAssignee.id.toString()) }
+                jsonPath("$.newAssigneeStudentNumber") { value("25-401") }
+                jsonPath("$.newAssigneeName") { value("새담당자") }
+            }
+        }
+
+        @Test
+        fun `완료된 과제의 담당자를 변경하면 400을 반환한다`() {
+            // given - 완료된 과제 생성
+            val originalAssignee = helper.createActiveStudent("25-402", "완료과제담당자")
+            val newAssignee = helper.createActiveStudent("25-403", "새담당자")
+            val task = helper.createTranslationTask(
+                TranslationTask.TaskType.GAONNURI_POST,
+                "완료된 과제",
+                originalAssignee
+            )
+            completeTask(task.id, 1000)
+
+            val request = mapOf(
+                "newAssigneeId" to newAssignee.id.toString(),
+            )
+
+            // when & then
+            mockMvc.patch("/tasks/${task.id}/assignee") {
+                contentType = MediaType.APPLICATION_JSON
+                content = objectMapper.writeValueAsString(request)
+                header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+            }.andExpect {
+                status { isBadRequest() }
+            }
+        }
+
+        @Test
+        fun `존재하지 않는 과제의 담당자를 변경하면 400을 반환한다`() {
+            // given
+            val newAssignee = helper.createActiveStudent("25-404", "새담당자")
+            val nonExistentTaskId = UUID.randomUUID()
+
+            val request = mapOf(
+                "newAssigneeId" to newAssignee.id.toString(),
+            )
+
+            // when & then
+            mockMvc.patch("/tasks/$nonExistentTaskId/assignee") {
+                contentType = MediaType.APPLICATION_JSON
+                content = objectMapper.writeValueAsString(request)
+                header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+            }.andExpect {
+                status { isBadRequest() }
+            }
+        }
+
+        @Test
+        fun `존재하지 않는 사용자로 담당자를 변경하면 400을 반환한다`() {
+            // given
+            val originalAssignee = helper.createActiveStudent("25-405", "원래담당자")
+            val task = helper.createTranslationTask(
+                TranslationTask.TaskType.GAONNURI_POST,
+                "존재하지 않는 사용자 테스트",
+                originalAssignee
+            )
+            val nonExistentUserId = UUID.randomUUID()
+
+            val request = mapOf(
+                "newAssigneeId" to nonExistentUserId.toString(),
+            )
+
+            // when & then
+            mockMvc.patch("/tasks/${task.id}/assignee") {
+                contentType = MediaType.APPLICATION_JSON
+                content = objectMapper.writeValueAsString(request)
+                header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+            }.andExpect {
+                status { isBadRequest() }
+            }
+        }
+
+        @Test
+        fun `휴식 상태인 사용자로 담당자를 변경하면 400을 반환한다`() {
+            // given
+            val originalAssignee = helper.createActiveStudent("25-406", "원래담당자")
+            helper.createActiveStudent("25-407", "다른사용자") // 마지막 활성 사용자 제약 회피
+            val restingUser = helper.createActiveStudent("25-408", "휴식중인사용자")
+            helper.setUserResting(restingUser.id, true)
+            val task = helper.createTranslationTask(
+                TranslationTask.TaskType.GAONNURI_POST,
+                "휴식 사용자 테스트",
+                originalAssignee
+            )
+
+            val request = mapOf(
+                "newAssigneeId" to restingUser.id.toString(),
+            )
+
+            // when & then
+            mockMvc.patch("/tasks/${task.id}/assignee") {
+                contentType = MediaType.APPLICATION_JSON
+                content = objectMapper.writeValueAsString(request)
+                header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+            }.andExpect {
+                status { isBadRequest() }
+            }
+        }
+
+        @Test
+        fun `담당자 변경 시 새 담당자에게 이메일이 발송된다`() {
+            // given
+            val originalAssignee = helper.createActiveStudent("25-409", "원래담당자")
+            val newAssignee = helper.createActiveStudent("25-410", "이메일테스트")
+            val task = helper.createTranslationTask(
+                TranslationTask.TaskType.GAONNURI_POST,
+                "이메일 발송 테스트 과제",
+                originalAssignee
+            )
+
+            val request = mapOf(
+                "newAssigneeId" to newAssignee.id.toString(),
+            )
+
+            // when
+            mockMvc.patch("/tasks/${task.id}/assignee") {
+                contentType = MediaType.APPLICATION_JSON
+                content = objectMapper.writeValueAsString(request)
+                header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+            }.andExpect {
+                status { isOk() }
+            }
+
+            // then - 과제 할당 이메일이 발송되었는지 검증
+            val mailSender = helper.getMailSender()
+            val emails = mailSender.getMessagesBySubject("새로운 번역 과제가 할당되었습니다")
+
+            assertThat(emails).hasSize(1)
+            val emailInfo = mailSender.extractEmailInfo(emails.first())
+            assertThat(emailInfo.content).contains("이메일테스트")
+            assertThat(emailInfo.content).contains("이메일 발송 테스트 과제")
+        }
+    }
+
+    @Nested
+    @DisplayName("DELETE /tasks/{taskId} - 과제 삭제")
+    inner class DeleteTask {
+
+        @Test
+        fun `과제를 삭제하면 204를 반환한다`() {
+            // given
+            val assignee = helper.createActiveStudent("25-500", "삭제테스트담당자")
+            val task = helper.createTranslationTask(
+                TranslationTask.TaskType.GAONNURI_POST,
+                "삭제할 과제",
+                assignee
+            )
+
+            // when & then
+            mockMvc.delete("/tasks/${task.id}") {
+                header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+            }.andExpect {
+                status { isNoContent() }
+            }
+        }
+
+        @Test
+        fun `삭제된 과제는 목록에서 조회되지 않는다`() {
+            // given
+            val assignee = helper.createActiveStudent("25-501", "삭제조회테스트")
+            val task = helper.createTranslationTask(
+                TranslationTask.TaskType.GAONNURI_POST,
+                "삭제 후 조회 테스트",
+                assignee
+            )
+
+            // when - 삭제
+            mockMvc.delete("/tasks/${task.id}") {
+                header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+            }.andExpect {
+                status { isNoContent() }
+            }
+
+            // then - 목록에서 해당 과제가 없어야 함
+            val result = mockMvc.get("/tasks?page=0&size=100") {
+                header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+            }.andReturn()
+
+            assertThat(result.response.status).isEqualTo(200)
+            val responseJson = objectMapper.readTree(result.response.contentAsString)
+            val taskIds = responseJson.path("content").map { it.path("id").asText() }
+            assertThat(taskIds).doesNotContain(task.id.toString())
+        }
+
+        @Test
+        fun `존재하지 않는 과제를 삭제하면 400을 반환한다`() {
+            // given
+            val nonExistentTaskId = UUID.randomUUID()
+
+            // when & then
+            mockMvc.delete("/tasks/$nonExistentTaskId") {
+                header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+            }.andExpect {
+                status { isBadRequest() }
+            }
+        }
+
+        @Test
+        fun `완료된 과제도 삭제할 수 있다`() {
+            // given - 완료된 과제 생성
+            val assignee = helper.createActiveStudent("25-502", "완료과제삭제테스트")
+            val task = helper.createTranslationTask(
+                TranslationTask.TaskType.GAONNURI_POST,
+                "완료된 삭제 과제",
+                assignee
+            )
+            completeTask(task.id, 1000)
+
+            // when & then
+            mockMvc.delete("/tasks/${task.id}") {
+                header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+            }.andExpect {
+                status { isNoContent() }
+            }
         }
     }
 }
