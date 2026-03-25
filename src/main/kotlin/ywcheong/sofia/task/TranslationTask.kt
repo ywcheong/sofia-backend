@@ -38,10 +38,10 @@ class TranslationTask(
 
     var remindedAt: Instant? = null,
 ) {
-    val isCompleted: Boolean
+    val completed: Boolean
         get() = completedAt != null
 
-    val isReminded: Boolean
+    val reminded: Boolean
         get() = remindedAt != null
 
     fun markAsReminded(at: Instant = Instant.now()) {

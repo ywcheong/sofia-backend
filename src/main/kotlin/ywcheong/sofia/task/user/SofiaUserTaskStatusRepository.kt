@@ -10,8 +10,8 @@ import java.util.UUID
 @Repository
 interface SofiaUserTaskStatusRepository : JpaRepository<SofiaUserTaskStatus, UUID> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("SELECT ut FROM SofiaUserTaskStatus ut WHERE ut.isResting = false ORDER BY ut.lastAssignedAt ASC LIMIT 1")
+    @Query("SELECT ut FROM SofiaUserTaskStatus ut WHERE ut.rest = false ORDER BY ut.lastAssignedAt ASC LIMIT 1")
     fun findNextAssignee(): SofiaUserTaskStatus?
 
-    fun countByIsRestingFalse(): Int
+    fun countByRest(rest: Boolean): Long
 }

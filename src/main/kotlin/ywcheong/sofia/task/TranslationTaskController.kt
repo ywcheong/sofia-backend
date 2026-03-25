@@ -35,7 +35,7 @@ class TranslationTaskController(
         val assigneeName: String,
         val assignmentType: TranslationTask.AssignmentType,
         val assignedAt: String,
-        val isCompleted: Boolean,
+        val completed: Boolean,
         val characterCount: Int?,
     )
 
@@ -90,7 +90,7 @@ class TranslationTaskController(
 
     data class ReportCompletionResponse(
         val taskId: UUID,
-        val isLate: Boolean,
+        val late: Boolean,
     )
 
     @AvailableCondition(phases = [SystemPhase.TRANSLATION], permissions = [SofiaPermission.KAKAO_ENDPOINT])
@@ -110,7 +110,7 @@ class TranslationTaskController(
 
         return ReportCompletionResponse(
             taskId = task.id,
-            isLate = translationTaskService.isLate(task),
+            late = translationTaskService.isLate(task),
         )
     }
 

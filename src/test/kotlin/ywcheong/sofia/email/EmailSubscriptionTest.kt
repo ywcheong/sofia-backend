@@ -47,7 +47,7 @@ class EmailSubscriptionTest(
             mockMvc.perform(get("/api/email/subscription/${userEmail.unsubscribeToken}/status"))
                 .andExpect(status().isOk)
                 .andExpect(jsonPath("$.email").value("2024001@ksa.hs.kr"))
-                .andExpect(jsonPath("$.isSubscribed").value(true))
+                .andExpect(jsonPath("$.subscribed").value(true))
         }
 
         @Test
@@ -71,12 +71,12 @@ class EmailSubscriptionTest(
             // when: 수신 거부
             mockMvc.perform(put("/api/email/subscription/${userEmail.unsubscribeToken}/unsubscribe"))
                 .andExpect(status().isOk)
-                .andExpect(jsonPath("$.isSubscribed").value(false))
+                .andExpect(jsonPath("$.subscribed").value(false))
 
             // then: 상태 조회로 확인
             mockMvc.perform(get("/api/email/subscription/${userEmail.unsubscribeToken}/status"))
                 .andExpect(status().isOk)
-                .andExpect(jsonPath("$.isSubscribed").value(false))
+                .andExpect(jsonPath("$.subscribed").value(false))
         }
     }
 
@@ -96,12 +96,12 @@ class EmailSubscriptionTest(
             // when: 수신 허용
             mockMvc.perform(put("/api/email/subscription/${userEmail.unsubscribeToken}/subscribe"))
                 .andExpect(status().isOk)
-                .andExpect(jsonPath("$.isSubscribed").value(true))
+                .andExpect(jsonPath("$.subscribed").value(true))
 
             // then: 상태 확인
             mockMvc.perform(get("/api/email/subscription/${userEmail.unsubscribeToken}/status"))
                 .andExpect(status().isOk)
-                .andExpect(jsonPath("$.isSubscribed").value(true))
+                .andExpect(jsonPath("$.subscribed").value(true))
         }
     }
 

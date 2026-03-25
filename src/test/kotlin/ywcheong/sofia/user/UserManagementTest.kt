@@ -89,7 +89,7 @@ class UserManagementTest(
                 jsonPath("$.content[0].studentNumber") { isString() }
                 jsonPath("$.content[0].studentName") { isString() }
                 jsonPath("$.content[0].role") { isString() }
-                jsonPath("$.content[0].isResting") { isBoolean() }
+                jsonPath("$.content[0].rest") { isBoolean() }
                 jsonPath("$.content[0].warningCount") { isNumber() }
                 jsonPath("$.content[0].adjustedCharCount") { isNumber() }
             }
@@ -103,11 +103,11 @@ class UserManagementTest(
         @Test
         fun `휴식 상태로 변경하면 200을 반환한다`() {
             // given - 활성 사용자 2명 이상 생성 (마지막 사용자 제약 회피)
-            helper.createActiveStudent("25-020", "사용자1")
-            val user = helper.createActiveStudent("25-021", "사용자2")
+            helper.createActiveStudent("25-020", "사용자나")
+            val user = helper.createActiveStudent("25-021", "사용자다")
 
             val request = mapOf(
-                "isResting" to true,
+                "rest" to true,
             )
 
             // when & then (관리자 권한 필요)
@@ -118,7 +118,7 @@ class UserManagementTest(
             }.andExpect {
                 status { isOk() }
                 jsonPath("$.userId") { value(user.id.toString()) }
-                jsonPath("$.isResting") { value(true) }
+                jsonPath("$.rest") { value(true) }
             }
         }
 
@@ -130,7 +130,7 @@ class UserManagementTest(
             helper.setUserResting(user.id, true)
 
             val request = mapOf(
-                "isResting" to false,
+                "rest" to false,
             )
 
             // when & then
@@ -141,7 +141,7 @@ class UserManagementTest(
             }.andExpect {
                 status { isOk() }
                 jsonPath("$.userId") { value(user.id.toString()) }
-                jsonPath("$.isResting") { value(false) }
+                jsonPath("$.rest") { value(false) }
             }
         }
 

@@ -27,7 +27,7 @@ class SofiaUserTaskStatus(
     var user: SofiaUser = user
         protected set
 
-    var isResting: Boolean = isResting
+    var rest: Boolean = isResting
         protected set
 
     var lastAssignedAt: Instant = lastAssignedAt
@@ -40,7 +40,7 @@ class SofiaUserTaskStatus(
         protected set
 
     fun updateRestStatus(newResting: Boolean) {
-        this.isResting = newResting
+        this.rest = newResting
     }
 
     fun addWarning() {

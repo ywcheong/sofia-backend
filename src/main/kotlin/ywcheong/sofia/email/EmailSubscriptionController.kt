@@ -28,7 +28,7 @@ class EmailSubscriptionController(
 
         return SubscriptionStatusResponse(
             email = userEmail.email,
-            isSubscribed = !userEmail.isUnsubscribed,
+            subscribed = !userEmail.isUnsubscribed,
         )
     }
 
@@ -45,7 +45,7 @@ class EmailSubscriptionController(
 
         return SubscriptionStatusResponse(
             email = userEmail.email,
-            isSubscribed = true,
+            subscribed = true,
         )
     }
 
@@ -62,12 +62,12 @@ class EmailSubscriptionController(
 
         return SubscriptionStatusResponse(
             email = userEmail.email,
-            isSubscribed = false,
+            subscribed = false,
         )
     }
 
     data class SubscriptionStatusResponse(
         val email: String,
-        val isSubscribed: Boolean,
+        val subscribed: Boolean,
     )
 }

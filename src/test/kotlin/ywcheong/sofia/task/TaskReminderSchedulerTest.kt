@@ -5,10 +5,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.TestConstructor
-import org.springframework.transaction.annotation.Transactional
 import ywcheong.sofia.config.TestScenarioHelper
 import ywcheong.sofia.phase.SystemPhase
 import ywcheong.sofia.task.TranslationTask.AssignmentType
@@ -52,7 +50,7 @@ class TaskReminderSchedulerTest(
 
             // then - 리마인드 표시됨
             val updatedTask = translationTaskRepository.findById(task.id).orElseThrow()
-            assertThat(updatedTask.isReminded).isTrue()
+            assertThat(updatedTask.reminded).isTrue()
             assertThat(updatedTask.remindedAt).isNotNull()
         }
 
@@ -74,7 +72,7 @@ class TaskReminderSchedulerTest(
 
             // then - 리마인드되지 않음
             val updatedTask = translationTaskRepository.findById(task.id).orElseThrow()
-            assertThat(updatedTask.isReminded).isFalse()
+            assertThat(updatedTask.reminded).isFalse()
             assertThat(updatedTask.remindedAt).isNull()
         }
 
@@ -100,7 +98,7 @@ class TaskReminderSchedulerTest(
 
             // then - 리마인드되지 않음
             val updatedTask = translationTaskRepository.findById(task.id).orElseThrow()
-            assertThat(updatedTask.isReminded).isFalse()
+            assertThat(updatedTask.reminded).isFalse()
         }
 
         @Test
@@ -148,7 +146,7 @@ class TaskReminderSchedulerTest(
             // then - 예외 없이 정상 완료
             // 모든 과제가 리마인드되지 않음
             val allTasks = translationTaskRepository.findAllIncompleteTasks()
-            assertThat(allTasks).allMatch { !it.isReminded }
+            assertThat(allTasks).allMatch { !it.reminded }
         }
 
         @Test
@@ -187,9 +185,9 @@ class TaskReminderSchedulerTest(
             val updatedTask2 = translationTaskRepository.findById(task2.id).orElseThrow()
             val updatedTask3 = translationTaskRepository.findById(task3.id).orElseThrow()
 
-            assertThat(updatedTask1.isReminded).isTrue()
-            assertThat(updatedTask2.isReminded).isTrue()
-            assertThat(updatedTask3.isReminded).isTrue()
+            assertThat(updatedTask1.reminded).isTrue()
+            assertThat(updatedTask2.reminded).isTrue()
+            assertThat(updatedTask3.reminded).isTrue()
         }
 
         @Test

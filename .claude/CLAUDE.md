@@ -24,6 +24,7 @@
 - 모든 Controller의 public 메서드는 반드시 `@AvailableCondition` 어노테이션을 부착해야 함. 이는 ArchUnit 테스트로 강제됨.
 - Controller에 `@CurrentUser user: SofiaUser` 파라미터를 추가하면 웹에서 현재 인증된 사용자가 주입됨.
 - KakaoSkill 구현 시 `KakaoSkill<ACT>`를 상속한 클래스를 만들어 @Service로 등록하고 `handleInternal()`만 구현하면 나머지는 자동으로 처리됨.
+- 컨트롤러 및 엔티티에는 `is~`, `get~`으로 시작하는 필드/프로퍼티를 절대 선언 금지. JavaBeans 규약과 Kotlin 네이밍 컨벤션에 심각한 불일치가 있기 때문임.
 
 ## 테스트작성 규칙
 

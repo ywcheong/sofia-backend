@@ -33,7 +33,7 @@ class UserManagementService(
                 studentNumber = user.studentNumber,
                 studentName = user.studentName,
                 role = user.auth.role,
-                isResting = user.taskStatus.isResting,
+                rest = user.taskStatus.rest,
                 warningCount = user.taskStatus.warningCount,
                 adjustedCharCount = user.taskStatus.adjustedCharCount,
             )
@@ -42,7 +42,7 @@ class UserManagementService(
 
     data class SetRestStatusCommand(
         val userId: UUID,
-        val isResting: Boolean,
+        val rest: Boolean,
     )
 
     data class AdjustCharCountCommand(
@@ -62,20 +62,20 @@ class UserManagementService(
             ?: throw BusinessException("존재하지 않는 사용자입니다.")
 
         // 이미 동일한 상태인 경우
-        if (userTask.isResting == command.isResting) {
+        if (userTask.rest == command.rest) {
             return userTask.user
         }
 
         // 휴식 상태로 변경 시, 마지막 활성 사용자인지 확인
-        if (command.isResting) {
-            val activeCount = sofiaUserTaskStatusRepository.countByIsRestingFalse()
+        if (command.rest) {
+            val activeCount = sofiaUserTaskStatusRepository.countByRest(false)
             if (activeCount <= 1) {
                 throw BusinessException("모든 번역버디가 휴식 상태가 되어 과제를 할당할 수 없습니다.")
             }
         }
 
-        userTask.updateRestStatus(command.isResting)
-        logger.info { "사용자 휴식 상태 변경: userId=${command.userId}, isResting=${command.isResting}" }
+        userTask.updateRestStatus(command.rest)
+        logger.info { "사용자 휴식 상태 변경: userId=${command.userId}, isResting=${command.rest}" }
 
         return userTask.user
     }

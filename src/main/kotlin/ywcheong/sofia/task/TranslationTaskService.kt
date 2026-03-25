@@ -44,7 +44,7 @@ class TranslationTaskService(
                 assigneeName = task.assignee.studentName,
                 assignmentType = task.assignmentType,
                 assignedAt = formatDateTime(task.assignedAt),
-                isCompleted = task.isCompleted,
+                completed = task.completed,
                 characterCount = task.characterCount,
             )
         }
@@ -122,21 +122,21 @@ class TranslationTaskService(
         val task = translationTaskRepository.findByIdOrNull(command.taskId)
             ?: throw BusinessException("존재하지 않는 과제입니다.")
 
-        if (task.isCompleted) {
+        if (task.completed) {
             throw BusinessException("이미 완료된 과제입니다.")
         }
 
         val now = Instant.now()
 
         // BR-013: 지각 여부 확인 (48시간 초과)
-        val isLate = ChronoUnit.SECONDS.between(task.assignedAt, now) > properties.lateThresholdSeconds
+        val late = ChronoUnit.SECONDS.between(task.assignedAt, now) > properties.lateThresholdSeconds
 
         task.completedAt = now
         task.characterCount = command.characterCount
 
         val savedTask = translationTaskRepository.save(task)
 
-        if (isLate) {
+        if (late) {
             // BR-014: 지각 시 경고 발행
             val userTask = sofiaUserTaskStatusRepository.findByIdOrNull(task.assignee.id)
                 ?: throw IllegalStateException("해당 사용자의 과제 정보가 없습니다: userId=${task.assignee.id}")
@@ -148,7 +148,7 @@ class TranslationTaskService(
             sendWarningEmail(task, userTask.warningCount)
         }
 
-        logger.info { "과제 완료 보고: taskId=${command.taskId}, characterCount=${command.characterCount}, isLate=$isLate" }
+        logger.info { "과제 완료 보고: taskId=${command.taskId}, characterCount=${command.characterCount}, isLate=$late" }
 
         return savedTask
     }
@@ -170,7 +170,7 @@ class TranslationTaskService(
         val userTask = sofiaUserTaskStatusRepository.findByIdOrNull(assigneeId)
             ?: throw IllegalStateException("해당 사용자의 과제 정보가 없습니다.")
 
-        if (userTask.isResting) {
+        if (userTask.rest) {
             throw BusinessException("휴식 상태인 번역버디에게는 과제를 할당할 수 없습니다.")
         }
 

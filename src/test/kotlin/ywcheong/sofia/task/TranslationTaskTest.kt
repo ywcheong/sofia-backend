@@ -98,7 +98,7 @@ class TranslationTaskTest(
                 jsonPath("$.content[0].assigneeName") { isString() }
                 jsonPath("$.content[0].assignmentType") { isString() }
                 jsonPath("$.content[0].assignedAt") { isString() }
-                jsonPath("$.content[0].isCompleted") { isBoolean() }
+                jsonPath("$.content[0].completed") { isBoolean() }
             }
         }
     }
@@ -329,7 +329,7 @@ class TranslationTaskTest(
             }.andExpect {
                 status { isOk() }
                 jsonPath("$.taskId") { value(task.id.toString()) }
-                jsonPath("$.isLate") { isBoolean() }
+                jsonPath("$.late") { isBoolean() }
             }
         }
 
@@ -424,7 +424,7 @@ class TranslationTaskTest(
                 header("Authorization", helper.kakaoAuthHeader())
             }.andExpect {
                 status { isOk() }
-                jsonPath("$.isLate") { value(true) }
+                jsonPath("$.late") { value(true) }
             }
 
             // then - 경고 이메일이 발송되었는지 검증

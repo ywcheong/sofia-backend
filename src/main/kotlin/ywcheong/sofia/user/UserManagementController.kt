@@ -15,7 +15,6 @@ import ywcheong.sofia.config.security.CurrentUser
 import ywcheong.sofia.phase.SystemPhase
 import ywcheong.sofia.user.auth.SofiaPermission
 import java.util.UUID
-import ywcheong.sofia.user.SofiaUserRole
 
 @RestController
 @RequestMapping("/users")
@@ -31,7 +30,7 @@ class UserManagementController(
         val studentNumber: String,
         val studentName: String,
         val role: SofiaUserRole,
-        val isResting: Boolean,
+        val rest: Boolean,
         val warningCount: Int,
         val adjustedCharCount: Int,
     )
@@ -45,12 +44,12 @@ class UserManagementController(
 
     // UC-013: 개인 휴식 설정
     data class SetRestStatusRequest(
-        val isResting: Boolean,
+        val rest: Boolean,
     )
 
     data class SetRestStatusResponse(
         val userId: UUID,
-        val isResting: Boolean,
+        val rest: Boolean,
     )
 
     @AvailableCondition(phases = [SystemPhase.RECRUITMENT, SystemPhase.TRANSLATION], permissions = [SofiaPermission.ADMIN_LEVEL])
@@ -59,18 +58,18 @@ class UserManagementController(
         @PathVariable userId: UUID,
         @RequestBody request: SetRestStatusRequest,
     ): SetRestStatusResponse {
-        logger.info { "사용자 휴식 상태 설정 요청: userId=$userId, isResting=${request.isResting}" }
+        logger.info { "사용자 휴식 상태 설정 요청: userId=$userId, isResting=${request.rest}" }
 
         val command = UserManagementService.SetRestStatusCommand(
             userId = userId,
-            isResting = request.isResting,
+            rest = request.rest,
         )
 
         val user = userManagementService.setRestStatus(command)
 
         return SetRestStatusResponse(
             userId = user.id,
-            isResting = request.isResting,
+            rest = request.rest,
         )
     }
 
