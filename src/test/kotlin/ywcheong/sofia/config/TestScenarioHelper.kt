@@ -212,6 +212,27 @@ class TestScenarioHelper(
     }
 
     /**
+     * 과제의 리마인더 발송 시간을 지정된 시간으로 설정합니다.
+     * remindedAt 필드 테스트 시나리오에 사용합니다.
+     */
+    fun setTaskRemindedAt(taskId: UUID, remindedAt: java.time.Instant?) {
+        val task = translationTaskRepository.findById(taskId).orElseThrow()
+        translationTaskRepository.save(
+            TranslationTask(
+                id = task.id,
+                taskType = task.taskType,
+                taskDescription = task.taskDescription,
+                assignee = task.assignee,
+                assignmentType = task.assignmentType,
+                assignedAt = task.assignedAt,
+                completedAt = task.completedAt,
+                characterCount = task.characterCount,
+                remindedAt = remindedAt,
+            )
+        )
+    }
+
+    /**
      * 사용자의 휴식 상태를 설정합니다.
      * 공개 API를 통하지 않고 직접 설정해야 하는 테스트 시나리오에 사용합니다.
      */

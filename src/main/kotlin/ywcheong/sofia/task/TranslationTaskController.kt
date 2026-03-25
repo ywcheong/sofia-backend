@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import ywcheong.sofia.aspect.AvailableCondition
 import ywcheong.sofia.commons.PageResponse
@@ -40,13 +41,32 @@ class TranslationTaskController(
         val assignedAt: String,
         val completed: Boolean,
         val characterCount: Int?,
+        val late: Boolean,
+        val remindedAt: String?,
     )
 
     @AvailableCondition(phases = [SystemPhase.RECRUITMENT, SystemPhase.TRANSLATION, SystemPhase.SETTLEMENT], permissions = [SofiaPermission.ADMIN_LEVEL])
     @GetMapping
-    fun findAllTasks(pageable: Pageable): PageResponse<TaskSummaryResponse> {
-        logger.info { "과제 목록 조회 요청: page=${pageable.pageNumber}, size=${pageable.pageSize}" }
-        return PageResponse.from(translationTaskService.findAllTasks(pageable))
+    @Operation(summary = "과제 목록 조회", description = "과제 설명, 타입, 배정타입, 완료상태, 담당자로 필터링 가능")
+    fun findAllTasks(
+        pageable: Pageable,
+        @RequestParam(required = false) search: String?,
+        @RequestParam(required = false) taskType: TranslationTask.TaskType?,
+        @RequestParam(required = false) assignmentType: TranslationTask.AssignmentType?,
+        @RequestParam(required = false) completed: Boolean?,
+        @RequestParam(required = false) assigneeId: UUID?,
+    ): PageResponse<TaskSummaryResponse> {
+        logger.info { "과제 목록 조회 요청: page=${pageable.pageNumber}, size=${pageable.pageSize}, search=$search, taskType=$taskType, assignmentType=$assignmentType, completed=$completed, assigneeId=$assigneeId" }
+
+        val condition = TranslationTaskService.FindAllTasksCondition(
+            search = search,
+            taskType = taskType,
+            assignmentType = assignmentType,
+            completed = completed,
+            assigneeId = assigneeId,
+        )
+
+        return PageResponse.from(translationTaskService.findAllTasks(condition, pageable))
     }
 
     // UC-003: 번역 과제 생성
@@ -67,7 +87,9 @@ class TranslationTaskController(
     @AvailableCondition(phases = [SystemPhase.TRANSLATION], permissions = [SofiaPermission.ADMIN_LEVEL])
     @PostMapping
     @Operation(summary = "번역 과제 생성", description = "assigneeId=null이면 자동배정, 아니면 지정된 사용자에게 수동배정")
-    fun createTask(@RequestBody request: CreateTaskRequest): CreateTaskResponse {
+    fun createTask(
+        @RequestBody request: CreateTaskRequest,
+    ): CreateTaskResponse {
         logger.info { "과제 생성 요청: taskType=${request.taskType}, taskDescription=${request.taskDescription}" }
 
         val command = TranslationTaskService.CreateTaskCommand(
@@ -148,6 +170,7 @@ class TranslationTaskController(
 
     @AvailableCondition(phases = [SystemPhase.TRANSLATION], permissions = [SofiaPermission.ADMIN_LEVEL])
     @PatchMapping("/{taskId}/assignee")
+    @Operation(summary = "과제 담당자 변경", description = "완료되지 않은 과제의 담당자를 변경")
     fun changeAssignee(
         @PathVariable taskId: UUID,
         @RequestBody request: ChangeAssigneeRequest,
@@ -172,7 +195,10 @@ class TranslationTaskController(
     // 과제 삭제
     @AvailableCondition(phases = [SystemPhase.TRANSLATION], permissions = [SofiaPermission.ADMIN_LEVEL])
     @DeleteMapping("/{taskId}")
-    fun deleteTask(@PathVariable taskId: UUID): ResponseEntity<Unit> {
+    @Operation(summary = "과제 삭제", description = "과제 ID로 과제 삭제")
+    fun deleteTask(
+        @PathVariable taskId: UUID,
+    ): ResponseEntity<Unit> {
         logger.info { "과제 삭제 요청: taskId=$taskId" }
 
         val command = TranslationTaskService.DeleteTaskCommand(taskId)

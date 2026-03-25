@@ -1,8 +1,10 @@
 package ywcheong.sofia.task
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import jakarta.persistence.criteria.Predicate
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import org.springframework.data.jpa.domain.Specification
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -33,8 +35,17 @@ class TranslationTaskService(
 ) {
     private val logger = KotlinLogging.logger {}
 
-    fun findAllTasks(pageable: Pageable): Page<TranslationTaskController.TaskSummaryResponse> {
-        return translationTaskRepository.findAll(pageable).map { task ->
+    data class FindAllTasksCondition(
+        val search: String?,
+        val taskType: TranslationTask.TaskType?,
+        val assignmentType: TranslationTask.AssignmentType?,
+        val completed: Boolean?,
+        val assigneeId: UUID?,
+    )
+
+    fun findAllTasks(condition: FindAllTasksCondition, pageable: Pageable): Page<TranslationTaskController.TaskSummaryResponse> {
+        val spec = createTaskFilterSpecification(condition)
+        return translationTaskRepository.findAll(spec, pageable).map { task ->
             TranslationTaskController.TaskSummaryResponse(
                 id = task.id,
                 taskType = task.taskType,
@@ -46,7 +57,47 @@ class TranslationTaskService(
                 assignedAt = formatDateTime(task.assignedAt),
                 completed = task.completed,
                 characterCount = task.characterCount,
+                late = isLate(task),
+                remindedAt = task.remindedAt?.let { formatDateTime(it) },
             )
+        }
+    }
+
+    private fun createTaskFilterSpecification(condition: FindAllTasksCondition): Specification<TranslationTask> {
+        return Specification { root, _, cb ->
+            val predicates = mutableListOf<Predicate>()
+
+            // 검색어 필터 (과제 설명에 포함, 대소문자 무시)
+            condition.search?.let { search ->
+                val searchPattern = "%${search.lowercase()}%"
+                predicates.add(cb.like(cb.lower(root.get("taskDescription")), searchPattern))
+            }
+
+            // 과제 타입 필터
+            condition.taskType?.let { taskType ->
+                predicates.add(cb.equal(root.get<TranslationTask.TaskType>("taskType"), taskType))
+            }
+
+            // 배정 타입 필터
+            condition.assignmentType?.let { assignmentType ->
+                predicates.add(cb.equal(root.get<TranslationTask.AssignmentType>("assignmentType"), assignmentType))
+            }
+
+            // 완료 상태 필터 (completedAt의 null 여부로 판단)
+            condition.completed?.let { completed ->
+                if (completed) {
+                    predicates.add(cb.isNotNull(root.get<Instant>("completedAt")))
+                } else {
+                    predicates.add(cb.isNull(root.get<Instant>("completedAt")))
+                }
+            }
+
+            // 담당자 ID 필터
+            condition.assigneeId?.let { assigneeId ->
+                predicates.add(cb.equal(root.get<SofiaUser>("assignee").get<UUID>("id"), assigneeId))
+            }
+
+            cb.and(*predicates.toTypedArray())
         }
     }
 

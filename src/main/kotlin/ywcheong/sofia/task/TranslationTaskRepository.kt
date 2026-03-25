@@ -1,13 +1,14 @@
 package ywcheong.sofia.task
 
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor
 import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
 import java.time.Instant
 import java.util.UUID
 
 @Repository
-interface TranslationTaskRepository : JpaRepository<TranslationTask, UUID> {
+interface TranslationTaskRepository : JpaRepository<TranslationTask, UUID>, JpaSpecificationExecutor<TranslationTask> {
     fun existsByTaskTypeAndTaskDescription(taskType: TranslationTask.TaskType, taskDescription: String): Boolean
 
     fun findByAssigneeAndCompletedAtIsNotNull(assignee: ywcheong.sofia.user.SofiaUser): List<TranslationTask>

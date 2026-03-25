@@ -101,6 +101,260 @@ class TranslationTaskTest(
                 jsonPath("$.content[0].assignmentType") { isString() }
                 jsonPath("$.content[0].assignedAt") { isString() }
                 jsonPath("$.content[0].completed") { isBoolean() }
+                jsonPath("$.content[0].late") { isBoolean() }
+                // remindedAt은 nullable 필드 - 별도 테스트에서 검증
+            }
+        }
+
+        @Test
+        fun `search 파라미터로 과제 설명을 부분 검색할 수 있다`() {
+            // given
+            val user = helper.createActiveStudent("25-021", "검색테스트사용자")
+            helper.createTranslationTask(TranslationTask.TaskType.GAONNURI_POST, "가나다라마바사", user)
+            helper.createTranslationTask(TranslationTask.TaskType.GAONNURI_POST, "아자차카타파하", user)
+            helper.createTranslationTask(TranslationTask.TaskType.GAONNURI_POST, "ABCDEF", user)
+
+            // when & then - "나다"로 검색하면 "가나다라마바사" 과제만 조회
+            mockMvc.get("/tasks?page=0&size=10&search=나다") {
+                header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.totalElements") { value(1) }
+                jsonPath("$.content[0].taskDescription") { value("가나다라마바사") }
+            }
+        }
+
+        @Test
+        fun `taskType 파라미터로 과제 타입을 필터링할 수 있다`() {
+            // given
+            val user = helper.createActiveStudent("25-022", "타입필터사용자")
+            helper.createTranslationTask(TranslationTask.TaskType.GAONNURI_POST, "가온누리 과제", user)
+            helper.createTranslationTask(TranslationTask.TaskType.EXTERNAL_POST, "외부 과제", user)
+
+            // when & then - GAONNURI_POST 타입만 조회
+            mockMvc.get("/tasks?page=0&size=10&taskType=GAONNURI_POST") {
+                header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.totalElements") { value(1) }
+                jsonPath("$.content[0].taskType") { value("GAONNURI_POST") }
+            }
+        }
+
+        @Test
+        fun `assignmentType 파라미터로 배정 타입을 필터링할 수 있다`() {
+            // given
+            val user1 = helper.createActiveStudent("25-023", "자동배정사용자")
+            val user2 = helper.createActiveStudent("25-024", "수동배정사용자")
+            helper.createTranslationTask(
+                TranslationTask.TaskType.GAONNURI_POST,
+                "자동 배정 과제",
+                user1,
+                TranslationTask.AssignmentType.AUTOMATIC
+            )
+            helper.createTranslationTask(
+                TranslationTask.TaskType.GAONNURI_POST,
+                "수동 배정 과제",
+                user2,
+                TranslationTask.AssignmentType.MANUAL
+            )
+
+            // when & then - MANUAL 배정 타입만 조회
+            mockMvc.get("/tasks?page=0&size=10&assignmentType=MANUAL") {
+                header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.totalElements") { value(1) }
+                jsonPath("$.content[0].assignmentType") { value("MANUAL") }
+            }
+        }
+
+        @Test
+        fun `completed 파라미터로 완료 상태를 필터링할 수 있다`() {
+            // given
+            val user = helper.createActiveStudent("25-025", "완료필터사용자")
+            val completedTask = helper.createTranslationTask(
+                TranslationTask.TaskType.GAONNURI_POST,
+                "완료된 과제",
+                user
+            )
+            completeTask(completedTask.id)
+            helper.createTranslationTask(
+                TranslationTask.TaskType.GAONNURI_POST,
+                "미완료 과제",
+                user
+            )
+
+            // when & then - 미완료 과제만 조회
+            mockMvc.get("/tasks?page=0&size=10&completed=false") {
+                header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.totalElements") { value(1) }
+                jsonPath("$.content[0].completed") { value(false) }
+                jsonPath("$.content[0].taskDescription") { value("미완료 과제") }
+            }
+        }
+
+        @Test
+        fun `assigneeId 파라미터로 담당자를 필터링할 수 있다`() {
+            // given
+            val user1 = helper.createActiveStudent("25-026", "담당자1")
+            val user2 = helper.createActiveStudent("25-027", "담당자2")
+            helper.createTranslationTask(TranslationTask.TaskType.GAONNURI_POST, "담당자1 과제", user1)
+            helper.createTranslationTask(TranslationTask.TaskType.GAONNURI_POST, "담당자2 과제", user2)
+
+            // when & then - user1이 담당자인 과제만 조회
+            mockMvc.get("/tasks?page=0&size=10&assigneeId=${user1.id}") {
+                header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.totalElements") { value(1) }
+                jsonPath("$.content[0].assigneeId") { value(user1.id.toString()) }
+            }
+        }
+
+        @Test
+        fun `복합 조건으로 필터링할 수 있다`() {
+            // given
+            val user1 = helper.createActiveStudent("25-028", "복합조건1")
+            val user2 = helper.createActiveStudent("25-029", "복합조건2")
+            helper.createTranslationTask(
+                TranslationTask.TaskType.GAONNURI_POST,
+                "ABC 자동과제",
+                user1,
+                TranslationTask.AssignmentType.AUTOMATIC
+            )
+            helper.createTranslationTask(
+                TranslationTask.TaskType.GAONNURI_POST,
+                "XYZ 수동과제",
+                user1,
+                TranslationTask.AssignmentType.MANUAL
+            )
+            val completedTask = helper.createTranslationTask(
+                TranslationTask.TaskType.EXTERNAL_POST,
+                "외부 ABC",
+                user2,
+                TranslationTask.AssignmentType.AUTOMATIC
+            )
+            completeTask(completedTask.id)
+
+            // when & then - GAONNURI_POST + 미완료 + "ABC" 검색
+            mockMvc.get("/tasks?page=0&size=10&taskType=GAONNURI_POST&completed=false&search=ABC") {
+                header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.totalElements") { value(1) }
+                jsonPath("$.content[0].taskType") { value("GAONNURI_POST") }
+                jsonPath("$.content[0].completed") { value(false) }
+                jsonPath("$.content[0].taskDescription") { value("ABC 자동과제") }
+            }
+        }
+
+        @Test
+        fun `48시간 초과하여 완료된 과제는 late가 true다`() {
+            // given - 49시간 전에 할당된 과제를 완료
+            val user = helper.createActiveStudent("25-030", "지각과제사용자")
+            val task = helper.createTranslationTask(
+                TranslationTask.TaskType.GAONNURI_POST,
+                "지각 완료 과제",
+                user
+            )
+            // 49시간 전으로 할당 시간 설정
+            val oldAssignedAt = java.time.Instant.now().minusSeconds(49 * 60 * 60)
+            helper.setTaskAssignedAt(task.id, oldAssignedAt)
+            // 과제 완료
+            completeTask(task.id)
+
+            // when & then
+            mockMvc.get("/tasks?page=0&size=10") {
+                header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.content[0].late") { value(true) }
+            }
+        }
+
+        @Test
+        fun `48시간 미만에 완료된 과제는 late가 false다`() {
+            // given - 1시간 전에 할당된 과제를 완료
+            val user = helper.createActiveStudent("25-031", "정상과제사용자")
+            val task = helper.createTranslationTask(
+                TranslationTask.TaskType.GAONNURI_POST,
+                "정상 완료 과제",
+                user
+            )
+            // 1시간 전으로 할당 시간 설정
+            val recentAssignedAt = java.time.Instant.now().minusSeconds(1 * 60 * 60)
+            helper.setTaskAssignedAt(task.id, recentAssignedAt)
+            // 과제 완료
+            completeTask(task.id)
+
+            // when & then
+            mockMvc.get("/tasks?page=0&size=10") {
+                header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.content[0].late") { value(false) }
+            }
+        }
+
+        @Test
+        fun `미완료 과제는 late가 false다`() {
+            // given
+            val user = helper.createActiveStudent("25-031a", "미완료사용자")
+            helper.createTranslationTask(
+                TranslationTask.TaskType.GAONNURI_POST,
+                "미완료 과제",
+                user
+            )
+
+            // when & then
+            mockMvc.get("/tasks?page=0&size=10") {
+                header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.content[0].late") { value(false) }
+            }
+        }
+
+        @Test
+        fun `리마인더 발송된 과제는 remindedAt에 시간값이 있다`() {
+            // given
+            val user = helper.createActiveStudent("25-032", "리마인더사용자")
+            val task = helper.createTranslationTask(
+                TranslationTask.TaskType.GAONNURI_POST,
+                "리마인더 발송 과제",
+                user
+            )
+            val remindedAt = java.time.Instant.now().minusSeconds(30 * 60)
+            helper.setTaskRemindedAt(task.id, remindedAt)
+
+            // when & then
+            mockMvc.get("/tasks?page=0&size=10") {
+                header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.content[0].remindedAt") { isString() }
+            }
+        }
+
+        @Test
+        fun `리마인더 미발송 과제는 remindedAt이 null이다`() {
+            // given
+            val user = helper.createActiveStudent("25-033", "미발송사용자")
+            helper.createTranslationTask(
+                TranslationTask.TaskType.GAONNURI_POST,
+                "리마인더 미발송 과제",
+                user
+            )
+
+            // when & then
+            mockMvc.get("/tasks?page=0&size=10") {
+                header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.content[0].remindedAt") { doesNotExist() }
             }
         }
     }
