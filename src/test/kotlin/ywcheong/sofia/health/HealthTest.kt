@@ -45,12 +45,14 @@ class HealthTest(
     inner class IdentityCheck {
 
         @Test
-        fun `인증된 사용자면 200과 ID를 반환한다`() {
+        fun `인증된 사용자면 200과 사용자 정보를 반환한다`() {
             mockMvc.get("/auth/check") {
                 header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
             }.andExpect {
                 status { isOk() }
-                content { string(adminInfo.userId.toString()) }
+                jsonPath("$.userId") { value(adminInfo.userId.toString()) }
+                jsonPath("$.userStudentNumber") { value("admin") }
+                jsonPath("$.userStudentName") { value("관리자") }
             }
         }
 
