@@ -9,4 +9,8 @@ import java.util.*
 interface SofiaUserRepository : JpaRepository<SofiaUser, UUID>, JpaSpecificationExecutor<SofiaUser> {
     fun existsByStudentNumber(studentNumber: String): Boolean
     fun findByAuthPlusfriendUserKey(plusfriendUserKey: String): SofiaUser?
+
+    fun findByAuthRole(role: SofiaUserRole): List<SofiaUser>
+
+    fun deleteByAuthRole(role: SofiaUserRole)
 }

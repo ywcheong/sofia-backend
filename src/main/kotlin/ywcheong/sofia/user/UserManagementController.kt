@@ -1,6 +1,7 @@
 package ywcheong.sofia.user
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.data.domain.Pageable
 import org.springframework.web.bind.annotation.GetMapping
@@ -43,6 +44,7 @@ class UserManagementController(
         permissions = [SofiaPermission.ADMIN_LEVEL]
     )
     @GetMapping
+    @Operation(summary = "사용자 목록 조회", description = "search는 학번+이름 부분검색, role/rest는 선택적 필터")
     fun findAllUsers(
         pageable: Pageable,
         @RequestParam(required = false) search: String?,
@@ -89,6 +91,7 @@ class UserManagementController(
         permissions = [SofiaPermission.ADMIN_LEVEL]
     )
     @PostMapping("/{userId}/rest")
+    @Operation(summary = "사용자 휴식 상태 설정", description = "휴식 중인 사용자는 과제 자동배정에서 제외됨")
     fun setRestStatus(
         @PathVariable userId: UUID,
         @RequestBody request: SetRestStatusRequest,
@@ -124,6 +127,7 @@ class UserManagementController(
         permissions = [SofiaPermission.ADMIN_LEVEL]
     )
     @PostMapping("/{userId}/adjust-char-count")
+    @Operation(summary = "보정 자수 조정", description = "amount 양수면 부여, 음수면 차감")
     fun adjustCharCount(
         @PathVariable userId: UUID,
         @RequestBody request: AdjustCharCountRequest,
@@ -180,6 +184,7 @@ class UserManagementController(
         permissions = [SofiaPermission.ADMIN_LEVEL]
     )
     @PostMapping("/{userId}/demote")
+    @Operation(summary = "관리자 강등", description = "자기 자신은 강등할 수 없음")
     fun demoteFromAdmin(
         @PathVariable userId: UUID,
         @CurrentUser currentUser: SofiaUser,

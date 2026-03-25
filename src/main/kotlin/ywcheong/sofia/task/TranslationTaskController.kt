@@ -1,6 +1,7 @@
 package ywcheong.sofia.task
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
@@ -65,6 +66,7 @@ class TranslationTaskController(
 
     @AvailableCondition(phases = [SystemPhase.TRANSLATION], permissions = [SofiaPermission.ADMIN_LEVEL])
     @PostMapping
+    @Operation(summary = "번역 과제 생성", description = "assigneeId=null이면 자동배정, 아니면 지정된 사용자에게 수동배정")
     fun createTask(@RequestBody request: CreateTaskRequest): CreateTaskResponse {
         logger.info { "과제 생성 요청: taskType=${request.taskType}, taskDescription=${request.taskDescription}" }
 
@@ -97,6 +99,7 @@ class TranslationTaskController(
 
     @AvailableCondition(phases = [SystemPhase.TRANSLATION], permissions = [SofiaPermission.KAKAO_ENDPOINT])
     @PostMapping("/{taskId}/completion")
+    @Operation(summary = "과제 완료 보고", description = "응답의 late 필드로 마감일 초과 여부 확인 가능")
     fun reportCompletion(
         @PathVariable taskId: UUID,
         @RequestBody request: ReportCompletionRequest,
@@ -119,6 +122,7 @@ class TranslationTaskController(
     // UC-011: 성과 보고서 생성
     @AvailableCondition(phases = [SystemPhase.RECRUITMENT, SystemPhase.TRANSLATION, SystemPhase.SETTLEMENT], permissions = [SofiaPermission.ADMIN_LEVEL])
     @GetMapping("/reports/performance.csv", produces = ["text/csv; charset=UTF-8"])
+    @Operation(summary = "성과 보고서 생성", description = "CSV 포맷으로 다운로드, UTF-8 BOM 포함")
     fun generatePerformanceReport(): ResponseEntity<String> {
         logger.info { "성과 보고서 생성 요청" }
 

@@ -1,6 +1,7 @@
 package ywcheong.sofia.glossary
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -83,6 +84,7 @@ class GlossaryController(
         permissions = []
     )
     @GetMapping
+    @Operation(summary = "용어 사전 조회", description = "keyword 있으면 부분검색, 없으면 전체조회")
     fun findAll(@RequestParam(required = false) keyword: String?): List<EntryResponse> {
         logger.info { "사전 조회 요청: keyword=$keyword" }
 
@@ -102,6 +104,7 @@ class GlossaryController(
         permissions = [SofiaPermission.ADMIN_LEVEL]
     )
     @PostMapping
+    @Operation(summary = "용어 추가", description = "중복된 한국어 용어가 있으면 400 에러")
     fun create(@RequestBody request: CreateRequest): EntryResponse {
         logger.info { "사전 항목 추가 요청: koreanTerm=${request.koreanTerm}" }
         val entry = glossaryService.create(request.toCommand())
@@ -127,6 +130,7 @@ class GlossaryController(
 
     @AvailableCondition(phases = [SystemPhase.RECRUITMENT, SystemPhase.TRANSLATION, SystemPhase.SETTLEMENT], permissions = [])
     @PostMapping("/auto-map")
+    @Operation(summary = "용어 자동 매핑", description = "대소문자/공백 무시하고 매핑, 매칭된 용어만 반환")
     fun autoMap(@RequestBody request: AutoMapRequest): List<AutoMapResponse> {
         logger.info { "사전 자동 매핑 요청: text length=${request.text.length}" }
         val mappedTerms = glossaryService.autoMap(request.text)

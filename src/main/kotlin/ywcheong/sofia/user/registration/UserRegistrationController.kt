@@ -1,6 +1,7 @@
 package ywcheong.sofia.user.registration
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.data.domain.Pageable
 import org.springframework.web.bind.annotation.GetMapping
@@ -44,6 +45,7 @@ class UserRegistrationController(
         permissions = [SofiaPermission.ADMIN_LEVEL]
     )
     @PostMapping("/{id}/acceptance")
+    @Operation(summary = "회원가입 신청 승인", description = "승인 시 사용자 계정이 생성됨")
     fun acceptRegistration(@PathVariable id: UUID) {
         logger.info { "회원가입 승인 요청: registrationId=$id" }
         userRegistrationService.acceptRegistration(id)
@@ -54,6 +56,7 @@ class UserRegistrationController(
         permissions = [SofiaPermission.ADMIN_LEVEL]
     )
     @PostMapping("/{id}/rejection")
+    @Operation(summary = "회원가입 신청 거부", description = "거부 시 신청 데이터가 삭제됨")
     fun denyRegistration(@PathVariable id: UUID) {
         logger.info { "회원가입 거부 요청: registrationId=$id" }
         userRegistrationService.denyRegistration(id)

@@ -1,6 +1,7 @@
 package ywcheong.sofia.kakao
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -89,6 +90,7 @@ class KakaoSkillController(
 
     @PostMapping
     @AvailableCondition(phases = [], permissions = [SofiaPermission.KAKAO_ENDPOINT]) // 페이즈는 각 스킬마다 별도 검증
+    @Operation(summary = "카카오톡 챗봇 스킬 처리", description = "action 파라미터로 적절한 스킬로 분기")
     fun handleSkill(@RequestBody request: SkillRequest): SkillResponse {
         logger.info { "Received Kakao Skill request: $request" }
 
