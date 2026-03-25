@@ -71,7 +71,7 @@ class GlossaryTest(
         }
 
         @Test
-        fun `영어 키워드로 검색하면 매칭되는 항목만 반환된다`() {
+        fun `영어 키워드로 검색해도 항목은 매칭하지 않는다`() {
             // given
             helper.createGlossaryEntry(koreanTerm = "번역", englishTerm = "Translation")
             helper.createGlossaryEntry(koreanTerm = "검수", englishTerm = "Review")
@@ -80,8 +80,7 @@ class GlossaryTest(
             mockMvc.get("/glossary?keyword=Rev")
                 .andExpect {
                     status { isOk() }
-                    jsonPath("$.length()") { value(1) }
-                    jsonPath("$[0].englishTerm") { value("Review") }
+                    jsonPath("$.length()") { value(0) }
                 }
         }
 

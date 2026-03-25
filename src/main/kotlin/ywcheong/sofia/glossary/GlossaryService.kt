@@ -44,8 +44,8 @@ class GlossaryService(
     @Transactional(readOnly = true)
     fun search(keyword: String): List<GlossaryEntry> {
         logger.debug { "사전 검색: keyword=$keyword" }
-        return glossaryRepository.findByKoreanTermContainingIgnoreCaseOrEnglishTermContainingIgnoreCase(
-            keyword, keyword
+        return glossaryRepository.findByKoreanTermContainingIgnoreCase(
+            keyword
         )
     }
 

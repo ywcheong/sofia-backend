@@ -1,11 +1,8 @@
 package ywcheong.sofia.glossary
 
 import org.springframework.data.jpa.repository.JpaRepository
-import java.util.UUID
+import java.util.*
 
 interface GlossaryRepository : JpaRepository<GlossaryEntry, UUID> {
-    fun findByKoreanTermContainingIgnoreCaseOrEnglishTermContainingIgnoreCase(
-        koreanTerm: String,
-        englishTerm: String,
-    ): List<GlossaryEntry>
+    fun findByKoreanTermContainingIgnoreCase(koreanTerm: String): List<GlossaryEntry>
 }
