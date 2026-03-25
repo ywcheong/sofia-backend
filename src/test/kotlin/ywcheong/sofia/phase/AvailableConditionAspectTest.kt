@@ -143,7 +143,7 @@ class AvailableConditionAspectTest(
         }
 
         @Test
-        fun `executeIfPhase 중 transitPhase는 대기한다`() {
+        fun `executeIfPhase 중 transitToRecruitment는 대기한다`() {
             val readStartedLatch = CountDownLatch(1)
             val transitCompletedLatch = CountDownLatch(1)
             val readCanFinishLatch = CountDownLatch(1)
@@ -156,28 +156,28 @@ class AvailableConditionAspectTest(
                 }
             }
 
-            // transitPhase 시도 (Write Lock 대기)
+            // transitToRecruitment 시도 (Write Lock 대기)
             val transitThread = thread(start = false) {
                 readStartedLatch.await()
                 Thread.sleep(200)
-                systemPhaseService.transitPhase(SystemPhase.RECRUITMENT)
+                systemPhaseService.transitToRecruitment()
                 transitCompletedLatch.countDown()
             }
 
             transitThread.start()
 
-            // transitPhase가 대기해야 함
+            // transitToRecruitment가 대기해야 함
             val transitCompletedDuringRead = transitCompletedLatch.await(500, TimeUnit.MILLISECONDS)
 
             readCanFinishLatch.countDown()
             readThread.join(3000)
             transitThread.join(3000)
 
-            assert(!transitCompletedDuringRead) { "executeIfPhase 중 transitPhase가 대기하지 않음" }
+            assert(!transitCompletedDuringRead) { "executeIfPhase 중 transitToRecruitment가 대기하지 않음" }
         }
 
         @Test
-        fun `transitPhase 중 executeIfPhase는 대기한다`() {
+        fun `transitToTranslation 중 executeIfPhase는 대기한다`() {
             val transitStartedLatch = CountDownLatch(1)
             val readCompletedLatch = CountDownLatch(1)
             val transitCanFinishLatch = CountDownLatch(1)
@@ -185,12 +185,12 @@ class AvailableConditionAspectTest(
             // setUp에서 RECRUITMENT로 변경 후 SETTLEMENT로 변경해야 함
             helper.setPhase(SystemPhase.RECRUITMENT)
 
-            // transitPhase 실행 (Write Lock 유지)
+            // transitToTranslation 실행 (Write Lock 유지)
             val transitThread = thread(start = true) {
                 transitStartedLatch.countDown()
                 Thread.sleep(200)
                 transitCanFinishLatch.await(5, TimeUnit.SECONDS)
-                systemPhaseService.transitPhase(SystemPhase.TRANSLATION)
+                systemPhaseService.transitToTranslation()
             }
 
             // executeIfPhase 시도 (Read Lock 대기)
@@ -210,7 +210,7 @@ class AvailableConditionAspectTest(
             transitThread.join(3000)
             readThread.join(3000)
 
-            assert(!readCompletedDuringTransit) { "transitPhase 중 executeIfPhase가 대기하지 않음" }
+            assert(!readCompletedDuringTransit) { "transitToTranslation 중 executeIfPhase가 대기하지 않음" }
         }
     }
 }

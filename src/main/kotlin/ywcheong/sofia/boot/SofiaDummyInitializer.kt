@@ -31,25 +31,20 @@ class SofiaDummyInitializer(
     override fun run(vararg args: String) {
         logger.warn { "[더미 모드] 더미 데이터 생성을 시작합니다..." }
 
-        val admins = createAdmins()
-        val students = createStudents()
-        val allUsers = admins + students
-
-        createTasks(allUsers)
+        createTasks(createAdmins() + createStudents())
         createGlossaryEntries()
-        val registrations = createRegistrations()
-
-        systemPhaseService.transitPhase(SystemPhase.RECRUITMENT)
-        systemPhaseService.transitPhase(SystemPhase.TRANSLATION)
+        systemPhaseService.transitToRecruitment()
+        systemPhaseService.transitToTranslation()
+        createRegistrations()
 
         logger.warn {
             """
             |[더미 모드] 더미 데이터 생성 완료!
-            |   - 관리자: ${admins.size}명
-            |   - 학생: ${students.size}명
+            |   - 관리자: 2명
+            |   - 학생: 10명
             |   - 작업: 30개
             |   - 용어집: 20개
-            |   - 가입 신청: ${registrations.size}개
+            |   - 가입 신청: 5개
             """.trimMargin()
         }
     }
