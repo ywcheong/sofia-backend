@@ -12,7 +12,7 @@ import java.util.*
 @Component
 class RequestLoggingFilter : OncePerRequestFilter() {
 
-    private val logger = KotlinLogging.logger {}
+    private val klog = KotlinLogging.logger {}
 
     override fun doFilterInternal(
         request: HttpServletRequest,
@@ -24,12 +24,12 @@ class RequestLoggingFilter : OncePerRequestFilter() {
         request.setAttribute("startTime", System.currentTimeMillis())
 
         try {
-            logger.info { "[요청] ${request.method} ${request.requestURI}" }
+            klog.info { "[요청] ${request.method} ${request.requestURI}" }
             filterChain.doFilter(request, response)
         } finally {
             val status = response.status
             val elapsed = (request.getAttribute("startTime") as? Long)?.let { System.currentTimeMillis() - it }
-            logger.info {
+            klog.info {
                 buildString {
                     append("[응답] ${request.method} ${request.requestURI} -> $status")
                     elapsed?.also { append(" (${elapsed}ms)") }
