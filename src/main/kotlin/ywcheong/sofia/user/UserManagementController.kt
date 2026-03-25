@@ -2,7 +2,6 @@ package ywcheong.sofia.user
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.swagger.v3.oas.annotations.tags.Tag
-import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -11,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import ywcheong.sofia.aspect.AvailableCondition
+import ywcheong.sofia.commons.PageResponse
 import ywcheong.sofia.config.security.CurrentUser
 import ywcheong.sofia.phase.SystemPhase
 import ywcheong.sofia.user.auth.SofiaPermission
@@ -37,9 +37,9 @@ class UserManagementController(
 
     @AvailableCondition(phases = [SystemPhase.RECRUITMENT, SystemPhase.TRANSLATION, SystemPhase.SETTLEMENT], permissions = [SofiaPermission.ADMIN_LEVEL])
     @GetMapping
-    fun findAllUsers(pageable: Pageable): Page<UserSummaryResponse> {
+    fun findAllUsers(pageable: Pageable): PageResponse<UserSummaryResponse> {
         logger.info { "사용자 목록 조회 요청: page=${pageable.pageNumber}, size=${pageable.pageSize}" }
-        return userManagementService.findAllUsers(pageable)
+        return PageResponse.from(userManagementService.findAllUsers(pageable))
     }
 
     // UC-013: 개인 휴식 설정

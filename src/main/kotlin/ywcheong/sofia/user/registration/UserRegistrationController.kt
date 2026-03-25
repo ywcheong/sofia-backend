@@ -2,7 +2,6 @@ package ywcheong.sofia.user.registration
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.swagger.v3.oas.annotations.tags.Tag
-import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -10,6 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import ywcheong.sofia.aspect.AvailableCondition
+import ywcheong.sofia.commons.PageResponse
 import ywcheong.sofia.phase.SystemPhase
 import ywcheong.sofia.user.auth.SofiaPermission
 import java.util.*
@@ -34,9 +34,9 @@ class UserRegistrationController(
         permissions = [SofiaPermission.ADMIN_LEVEL]
     )
     @GetMapping
-    fun findAllRegistrations(pageable: Pageable): Page<RegistrationSummaryResponse> {
+    fun findAllRegistrations(pageable: Pageable): PageResponse<RegistrationSummaryResponse> {
         logger.info { "신청 목록 조회 요청: page=${pageable.pageNumber}, size=${pageable.pageSize}" }
-        return userRegistrationService.findAllRegistrations(pageable)
+        return PageResponse.from(userRegistrationService.findAllRegistrations(pageable))
     }
 
     @AvailableCondition(

@@ -2,7 +2,6 @@ package ywcheong.sofia.task
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.swagger.v3.oas.annotations.tags.Tag
-import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -12,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import ywcheong.sofia.aspect.AvailableCondition
+import ywcheong.sofia.commons.PageResponse
 import ywcheong.sofia.phase.SystemPhase
 import ywcheong.sofia.user.auth.SofiaPermission
 import java.util.UUID
@@ -41,9 +41,9 @@ class TranslationTaskController(
 
     @AvailableCondition(phases = [SystemPhase.RECRUITMENT, SystemPhase.TRANSLATION, SystemPhase.SETTLEMENT], permissions = [SofiaPermission.ADMIN_LEVEL])
     @GetMapping
-    fun findAllTasks(pageable: Pageable): Page<TaskSummaryResponse> {
+    fun findAllTasks(pageable: Pageable): PageResponse<TaskSummaryResponse> {
         logger.info { "과제 목록 조회 요청: page=${pageable.pageNumber}, size=${pageable.pageSize}" }
-        return translationTaskService.findAllTasks(pageable)
+        return PageResponse.from(translationTaskService.findAllTasks(pageable))
     }
 
     // UC-003: 번역 과제 생성
