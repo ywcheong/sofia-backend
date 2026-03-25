@@ -3,6 +3,7 @@ package ywcheong.sofia.user
 import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
+import jakarta.persistence.FetchType
 import jakarta.persistence.Id
 import jakarta.persistence.OneToOne
 import ywcheong.sofia.email.user.SofiaUserEmail
@@ -29,13 +30,13 @@ class SofiaUser(
     var studentName: String = studentName
         protected set
 
-    @OneToOne(mappedBy = "user", cascade = [CascadeType.ALL])
+    @OneToOne(mappedBy = "user", cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
     lateinit var taskStatus: SofiaUserTaskStatus
 
-    @OneToOne(mappedBy = "user", cascade = [CascadeType.ALL])
+    @OneToOne(mappedBy = "user", cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
     lateinit var auth: SofiaUserAuth
 
-    @OneToOne(mappedBy = "user", cascade = [CascadeType.ALL])
+    @OneToOne(mappedBy = "user", cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
     lateinit var email: SofiaUserEmail
 
     init {

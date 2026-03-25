@@ -12,6 +12,28 @@ class MyInfoService(
     private val taskProperties: TranslationTaskProperties,
     private val registrationRepository: UserRegistrationRepository,
 ) {
+    data class MyInfoResult(
+        val roleText: String,
+        val studentNumber: String,
+        val studentName: String,
+        val completedCharCount: Int,
+        val adjustedCharCount: Int,
+        val estimatedSeconds: Int,
+        val warningCount: Int,
+    ) {
+        fun formatEstimatedDuration(): String {
+            val hours = estimatedSeconds / 3600
+            val minutes = (estimatedSeconds % 3600) / 60
+            val secs = estimatedSeconds % 60
+
+            return buildString {
+                if (hours > 0) append("${hours}시간 ")
+                if (minutes > 0) append("${minutes}분 ")
+                if (secs > 0 || isEmpty()) append("${secs}초")
+            }.trim()
+        }
+    }
+
     fun getMyInfo(user: SofiaUser): MyInfoResult {
         val completedCharCount = taskRepository.sumCharacterCountByAssignee(user)
         val adjustedCharCount = user.taskStatus.adjustedCharCount
@@ -32,27 +54,5 @@ class MyInfoService(
 
     fun findPendingRegistration(plusfriendUserKey: String): UserRegistration? {
         return registrationRepository.findByPlusfriendUserKey(plusfriendUserKey)
-    }
-}
-
-data class MyInfoResult(
-    val roleText: String,
-    val studentNumber: String,
-    val studentName: String,
-    val completedCharCount: Int,
-    val adjustedCharCount: Int,
-    val estimatedSeconds: Int,
-    val warningCount: Int,
-) {
-    fun formatEstimatedDuration(): String {
-        val hours = estimatedSeconds / 3600
-        val minutes = (estimatedSeconds % 3600) / 60
-        val secs = estimatedSeconds % 60
-
-        return buildString {
-            if (hours > 0) append("${hours}시간 ")
-            if (minutes > 0) append("${minutes}분 ")
-            if (secs > 0 || isEmpty()) append("${secs}초")
-        }.trim()
     }
 }
