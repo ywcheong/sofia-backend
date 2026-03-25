@@ -41,8 +41,8 @@ class GlossaryTest(
         @Test
         fun `키워드 없이 전체 사전을 조회하면 모든 항목이 반환된다`() {
             // given: 사전에 2개의 항목이 등록되어 있음
-            val entry1 = helper.createGlossaryEntry(koreanTerm = "번역", englishTerm = "Translation")
-            val entry2 = helper.createGlossaryEntry(koreanTerm = "검수", englishTerm = "Review")
+            helper.createGlossaryEntry(koreanTerm = "번역", englishTerm = "Translation")
+            helper.createGlossaryEntry(koreanTerm = "검수", englishTerm = "Review")
 
             // when & then: 전체 조회 시 2개 항목 반환
             mockMvc.get("/glossary")

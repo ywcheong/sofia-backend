@@ -4,9 +4,8 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.mail.javamail.MimeMessageHelper
 import org.springframework.stereotype.Service
-import org.springframework.transaction.event.TransactionalEventListener
 import ywcheong.sofia.email.user.SofiaUserEmailRepository
-import java.util.UUID
+import java.util.*
 
 interface EmailSendService {
     fun sendEmail(template: EmailTemplate): EmailSendResult
