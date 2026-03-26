@@ -93,7 +93,7 @@ class EmailTemplatePlaceholderTest {
 
     @ParameterizedTest
     @MethodSource("allEmailTemplates")
-    @DisplayName("모든 EmailTemplate 구현체는 대응하는 HTML 템플릿의 placeholder를 올바르게 제공해야 함")
+    @DisplayName("placeholder 제공 검증")
     fun `모든 EmailTemplate 구현체는 대응하는 HTML 템플릿의 placeholder를 올바르게 제공해야 함`(template: EmailTemplate) {
         // when: header + body + footer 템플릿에서 placeholder 추출 (header와 footer 포함)
         val htmlPlaceholders = mutableSetOf<String>()

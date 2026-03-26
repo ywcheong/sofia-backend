@@ -46,6 +46,7 @@ class SofiaUserRegistrationTest(
     inner class FindAllRegistrations {
 
         @Test
+        @DisplayName("GET /user/registrations - 페이지네이션으로 신청 목록 조회")
         fun `페이지네이션으로 신청 목록을 조회하면 200을 반환한다`() {
             // given - 여러 신청 생성
             simulator.sendMessageFromAnonymous(
@@ -73,6 +74,7 @@ class SofiaUserRegistrationTest(
         }
 
         @Test
+        @DisplayName("GET /user/registrations - 첫 번째 페이지 신청 목록 조회")
         fun `첫 번째 페이지에는 요청한 개수만큼의 신청이 반환된다`() {
             // given - 여러 신청 생성
             simulator.sendMessageFromAnonymous(
@@ -97,6 +99,7 @@ class SofiaUserRegistrationTest(
         }
 
         @Test
+        @DisplayName("GET /user/registrations - 신청 응답 필드 포함 확인")
         fun `신청 응답에 필요한 필드가 모두 포함된다`() {
             // given
             simulator.sendMessageFromAnonymous(
@@ -121,6 +124,7 @@ class SofiaUserRegistrationTest(
     @DisplayName("registration_apply 액션 - 회원가입 신청")
     inner class ApplyRegistration {
         @Test
+        @DisplayName("POST /kakao/skill - 유효한 회원가입 신청")
         fun `유효한 요청이면 성공 메시지를 반환한다`() {
             // given & when
             val result = simulator.sendMessage(
@@ -140,6 +144,7 @@ class SofiaUserRegistrationTest(
         }
 
         @Test
+        @DisplayName("POST /kakao/skill - 학번 형식 오류로 회원가입 신청 실패")
         fun `학번 형식이 올바르지 않으면 에러 메시지를 반환한다`() {
             // given & when
             val result = simulator.sendMessage(
@@ -157,6 +162,7 @@ class SofiaUserRegistrationTest(
         }
 
         @Test
+        @DisplayName("POST /kakao/skill - 이름 형식 오류로 회원가입 신청 실패")
         fun `이름이 형식에 맞지 않으면 에러 메시지를 반환한다`() {
             // given & when
             val result = simulator.sendMessage(
@@ -174,6 +180,7 @@ class SofiaUserRegistrationTest(
         }
 
         @Test
+        @DisplayName("POST /kakao/skill - 이미 가입된 학번으로 회원가입 신청 실패")
         fun `이미 가입된 학번으로 신청하면 에러 메시지를 반환한다`() {
             // given - 활성 유저 생성
             sofiaUserRepository.save(
@@ -200,6 +207,7 @@ class SofiaUserRegistrationTest(
         }
 
         @Test
+        @DisplayName("POST /kakao/skill - 이미 신청된 학번으로 중복 회원가입 신청 실패")
         fun `이미 신청된 학번으로 다시 신청하면 에러 메시지를 반환한다`() {
             // given - 먼저 신청 생성
             simulator.sendMessage(
@@ -227,6 +235,7 @@ class SofiaUserRegistrationTest(
         }
 
         @Test
+        @DisplayName("POST /kakao/skill - 이미 가입된 사용자의 회원가입 신청 실패")
         fun `이미 가입된 사용자가 신청하면 에러 메시지를 반환한다`() {
             // given - 활성 유저 생성
             val user = helper.createActiveStudent("25-001", "홍길동")
@@ -252,6 +261,7 @@ class SofiaUserRegistrationTest(
     inner class CancelRegistration {
 
         @Test
+        @DisplayName("POST /kakao/skill - 확인 메시지와 함께 회원가입 취소")
         fun `확인 메시지와 함께 취소하면 성공 메시지를 반환한다`() {
             // given - 신청 생성 (동일한 plusfriendUserKey 사용)
             val plusfriendUserKey = "test-user-key-cancel"
@@ -277,6 +287,7 @@ class SofiaUserRegistrationTest(
         }
 
         @Test
+        @DisplayName("POST /kakao/skill - 확인 메시지 없이 회원가입 취소 시 철회 거부")
         fun `확인 메시지 없이 취소하면 취소하지 않는다는 메시지를 반환한다`() {
             // given & when
             val result = simulator.sendMessage(
@@ -291,6 +302,7 @@ class SofiaUserRegistrationTest(
         }
 
         @Test
+        @DisplayName("POST /kakao/skill - 가입 요청 없이 회원가입 취소 실패")
         fun `가입 요청이 없으면 에러 메시지를 반환한다`() {
             // given & when - 신청 없이 취소 시도
             val result = simulator.sendMessage(
@@ -305,6 +317,7 @@ class SofiaUserRegistrationTest(
         }
 
         @Test
+        @DisplayName("POST /kakao/skill - 승인된 사용자의 회원가입 취소 실패")
         fun `승인된 사용자가 취소하면 에러 메시지를 반환한다`() {
             // given - 활성 유저 생성
             val user = helper.createActiveStudent("25-001", "홍길동")
@@ -327,6 +340,7 @@ class SofiaUserRegistrationTest(
     inner class AcceptRegistration {
 
         @Test
+        @DisplayName("POST /user/registrations/{id}/acceptance - 가입 승인 및 이메일 발송")
         fun `가입 승인 시 승인 이메일이 발송된다`() {
             // given - 회원가입 신청 생성
             val plusfriendUserKey = "test-accept-user-key"
@@ -363,6 +377,7 @@ class SofiaUserRegistrationTest(
     inner class DenyRegistration {
 
         @Test
+        @DisplayName("POST /user/registrations/{id}/rejection - 가입 거절 및 이메일 발송")
         fun `가입 거절 시 거절 이메일이 발송된다`() {
             // given - 회원가입 신청 생성
             val plusfriendUserKey = "test-deny-user-key"

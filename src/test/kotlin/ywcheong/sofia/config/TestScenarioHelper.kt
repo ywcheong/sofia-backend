@@ -254,6 +254,27 @@ class TestScenarioHelper(
     }
 
     /**
+     * 과제를 완료 상태로 변경합니다.
+     * 완료 시간은 현재 시간으로 설정됩니다.
+     */
+    fun completeTask(taskId: UUID) {
+        val task = translationTaskRepository.findById(taskId).orElseThrow()
+        translationTaskRepository.save(
+            TranslationTask(
+                id = task.id,
+                taskType = task.taskType,
+                taskDescription = task.taskDescription,
+                assignee = task.assignee,
+                assignmentType = task.assignmentType,
+                assignedAt = task.assignedAt,
+                completedAt = java.time.Instant.now(),
+                characterCount = task.characterCount,
+                remindedAt = task.remindedAt,
+            )
+        )
+    }
+
+    /**
      * 사용자의 휴식 상태를 설정합니다.
      * 공개 API를 통하지 않고 직접 설정해야 하는 테스트 시나리오에 사용합니다.
      */
@@ -328,4 +349,16 @@ class TestScenarioHelper(
      */
     fun findRegistrationByStudentNumber(studentNumber: String): UserRegistration? =
         userRegistrationRepository.findAll().find { it.studentNumber == studentNumber }
+
+    /**
+     * 과제 ID로 과제를 조회합니다.
+     */
+    fun findTaskById(taskId: UUID): TranslationTask? =
+        translationTaskRepository.findById(taskId).orElse(null)
+
+    /**
+     * 모든 미완료 과제를 조회합니다.
+     */
+    fun findAllIncompleteTasks(): List<TranslationTask> =
+        translationTaskRepository.findAllIncompleteTasks()
 }

@@ -39,6 +39,7 @@ class ReportTaskCompletionSkillTest(
     inner class ReportCompletionSuccess {
 
         @Test
+        @DisplayName("POST /kakao/skill - reportwork 요청 (정상 완료)")
         fun `정상적으로 과제를 완료 보고하면 성공 메시지를 반환한다`() {
             // given: 활성 학생과 할당된 과제
             val user = helper.createActiveStudent("25-001", "홍길동")
@@ -65,6 +66,7 @@ class ReportTaskCompletionSkillTest(
         }
 
         @Test
+        @DisplayName("POST /kakao/skill - reportwork 요청 (글자 수에 '자' 접미사 포함)")
         fun `글자 수에 자가 포함되어도 정상 처리된다`() {
             // given: 활성 학생과 할당된 과제
             val user = helper.createActiveStudent("25-002", "김철수")
@@ -91,6 +93,7 @@ class ReportTaskCompletionSkillTest(
         }
 
         @Test
+        @DisplayName("POST /kakao/skill - reportwork 요청 (글자 수에 공백과 '자' 접미사 포함)")
         fun `글자 수에 공백과 자가 포함되어도 정상 처리된다`() {
             // given: 활성 학생과 할당된 과제
             val user = helper.createActiveStudent("25-003", "박영희")
@@ -122,6 +125,7 @@ class ReportTaskCompletionSkillTest(
     inner class LateCompletionReport {
 
         @Test
+        @DisplayName("POST /kakao/skill - reportwork 요청 (지각 완료로 인한 경고 등록)")
         fun `지각 완료 시 사용자에게 경고 개수가 표시된다`() {
             // given: 활성 학생과 49시간 전에 할당된 과제
             val user = helper.createActiveStudent("25-010", "지각사용자")
@@ -157,6 +161,7 @@ class ReportTaskCompletionSkillTest(
     inner class ErrorCases {
 
         @Test
+        @DisplayName("POST /kakao/skill - reportwork 요청 (다른 사용자의 과제명 입력)")
         fun `다른 사용자의 과제명이면 에러 메시지를 반환한다`() {
             // given: 활성 학생
             val user = helper.createActiveStudent("25-020", "사용자")
@@ -177,6 +182,7 @@ class ReportTaskCompletionSkillTest(
         }
 
         @Test
+        @DisplayName("POST /kakao/skill - reportwork 요청 (이미 완료된 과제)")
         fun `이미 완료된 과제면 에러 메시지를 반환한다`() {
             // given: 활성 학생과 이미 완료된 과제
             val user = helper.createActiveStudent("25-021", "완료사용자")
@@ -212,6 +218,7 @@ class ReportTaskCompletionSkillTest(
         }
 
         @Test
+        @DisplayName("POST /kakao/skill - reportwork 요청 (글자 수 음수 입력)")
         fun `글자 수가 음수면 에러 메시지를 반환한다`() {
             // given: 활성 학생과 할당된 과제
             val user = helper.createActiveStudent("25-022", "음수사용자")
@@ -237,6 +244,7 @@ class ReportTaskCompletionSkillTest(
         }
 
         @Test
+        @DisplayName("POST /kakao/skill - reportwork 요청 (글자 수 비숫자 입력)")
         fun `글자 수가 숫자가 아니면 에러 메시지를 반환한다`() {
             // given: 활성 학생과 할당된 과제
             val user = helper.createActiveStudent("25-023", "비숫자사용자")
@@ -262,6 +270,7 @@ class ReportTaskCompletionSkillTest(
         }
 
         @Test
+        @DisplayName("POST /kakao/skill - reportwork 요청 (존재하지 않는 과제명 입력)")
         fun `존재하지 않는 과제명이면 에러 메시지를 반환한다`() {
             // given: 활성 학생
             val user = helper.createActiveStudent("25-024", "잘못된과제사용자")
@@ -282,6 +291,7 @@ class ReportTaskCompletionSkillTest(
         }
 
         @Test
+        @DisplayName("POST /kakao/skill - reportwork 요청 (미가입 사용자)")
         fun `미가입 사용자가 요청하면 가입 안내 메시지를 반환한다`() {
             // given: 과제 생성 (다른 사용자)
             val taskOwner = helper.createActiveStudent("25-025", "과제소유자")

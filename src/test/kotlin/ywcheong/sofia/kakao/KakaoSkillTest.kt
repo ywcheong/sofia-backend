@@ -41,6 +41,7 @@ class KakaoSkillTest(
     inner class HealthCheck {
 
         @Test
+        @DisplayName("POST /kakao/skill - healthcheck 요청 (등록된 사용자)")
         fun `등록된 사용자가 요청하면 ok 응답을 반환한다`() {
             // given: 등록된 사용자
             val user = helper.createActiveStudent("2024001", "홍길동")
@@ -54,6 +55,7 @@ class KakaoSkillTest(
         }
 
         @Test
+        @DisplayName("POST /kakao/skill - healthcheck 요청 (익명 사용자)")
         fun `익명 사용자가 요청해도 ok 응답을 반환한다`() {
             // when: 익명 사용자의 healthcheck 요청
             val result = simulator.sendMessage(fromUser = null, action = "healthcheck")
@@ -69,6 +71,7 @@ class KakaoSkillTest(
     inner class UnknownAction {
 
         @Test
+        @DisplayName("POST /kakao/skill - 존재하지 않는 액션 요청")
         fun `등록되지 않은 액션을 요청하면 서버 오류 메시지를 반환한다`() {
             // when: 존재하지 않는 액션 요청
             val result = simulator.sendMessage(fromUser = null, action = "unknown-action")
@@ -86,6 +89,7 @@ class KakaoSkillTest(
     inner class Dictionary {
 
         @Test
+        @DisplayName("POST /kakao/skill - dictionary 액션 (단어 찾음)")
         fun `텍스트에서 사전 단어를 찾으면 목록을 반환한다`() {
             // given: 사전에 단어 등록
             helper.createGlossaryEntry(koreanTerm = "번역", englishTerm = "Translation")
@@ -106,6 +110,7 @@ class KakaoSkillTest(
         }
 
         @Test
+        @DisplayName("POST /kakao/skill - dictionary 액션 (단어 없음)")
         fun `텍스트에서 사전 단어를 찾지 못하면 안내 메시지를 반환한다`() {
             // given: 사전에 단어 등록
             helper.createGlossaryEntry(koreanTerm = "번역", englishTerm = "Translation")
@@ -124,6 +129,7 @@ class KakaoSkillTest(
         }
 
         @Test
+        @DisplayName("POST /kakao/skill - dictionary 액션 (텍스트 길이 표시)")
         fun `텍스트 길이 정보가 올바르게 표시된다`() {
             // given: 공백이 포함된 텍스트
             val text = "번역 작업"
@@ -142,6 +148,7 @@ class KakaoSkillTest(
         }
 
         @Test
+        @DisplayName("POST /kakao/skill - dictionary 액션 (긴 텍스트 잘림)")
         fun `긴 텍스트는 잘려서 표시된다`() {
             // given: 50자 초과 텍스트
             val longText = "a".repeat(100)
@@ -164,6 +171,7 @@ class KakaoSkillTest(
     inner class GetToken {
 
         @Test
+        @DisplayName("POST /kakao/skill - gettoken 액션 (등록된 사용자)")
         fun `등록된 사용자가 요청하면 토큰을 반환한다`() {
             // given: 등록된 사용자
             val user = helper.createActiveStudent("2024001", "홍길동")
@@ -179,6 +187,7 @@ class KakaoSkillTest(
         }
 
         @Test
+        @DisplayName("POST /kakao/skill - gettoken 액션 (미등록 사용자)")
         fun `미등록 사용자가 요청하면 오류 메시지를 반환한다`() {
             // when: 익명 사용자의 gettoken 요청
             val result = simulator.sendMessage(fromUser = null, action = "gettoken")
@@ -194,6 +203,7 @@ class KakaoSkillTest(
     inner class RegenerateToken {
 
         @Test
+        @DisplayName("POST /kakao/skill - retoken 액션 (토큰 재발급)")
         fun `확인 메시지와 함께 요청하면 토큰을 재발급한다`() {
             // given: 등록된 사용자
             val user = helper.createActiveStudent("2024001", "홍길동")
@@ -213,6 +223,7 @@ class KakaoSkillTest(
         }
 
         @Test
+        @DisplayName("POST /kakao/skill - retoken 액션 (취소)")
         fun `확인 메시지 없이 요청하면 취소 메시지를 반환한다`() {
             // given: 등록된 사용자
             val user = helper.createActiveStudent("2024002", "김철수")
@@ -230,6 +241,7 @@ class KakaoSkillTest(
         }
 
         @Test
+        @DisplayName("POST /kakao/skill - retoken 액션 (미등록 사용자)")
         fun `미등록 사용자가 요청하면 오류 메시지를 반환한다`() {
             // when: 익명 사용자의 retoken 요청
             val result = simulator.sendMessage(
@@ -249,6 +261,7 @@ class KakaoSkillTest(
     inner class MyInfo {
 
         @Test
+        @DisplayName("POST /kakao/skill - myinfo 액션 (승인된 학생)")
         fun `승인된 학생이 요청하면 자신의 정보를 반환한다`() {
             // given: 승인된 학생
             val user = helper.createActiveStudent("2024001", "홍길동")
@@ -267,6 +280,7 @@ class KakaoSkillTest(
         }
 
         @Test
+        @DisplayName("POST /kakao/skill - myinfo 액션 (관리자)")
         fun `관리자가 요청하면 관리자 정보를 반환한다`() {
             // given: 관리자
             val admin = helper.createAdminAndGetToken("admin", "관리자").user
@@ -280,6 +294,7 @@ class KakaoSkillTest(
         }
 
         @Test
+        @DisplayName("POST /kakao/skill - myinfo 액션 (심사 중)")
         fun `가입 요청 심사 중인 사용자는 심사 중 메시지를 받는다`() {
             // given: 가입 요청 생성
             val plusfriendUserKey = "pending-user-key"
@@ -297,6 +312,7 @@ class KakaoSkillTest(
         }
 
         @Test
+        @DisplayName("POST /kakao/skill - myinfo 액션 (미가입자)")
         fun `미가입자는 가입 요청 안내를 받는다`() {
             // when: 미가입자의 myinfo 요청
             val result = simulator.sendMessageFromAnonymous(

@@ -40,6 +40,7 @@ class UserManagementTest(
     inner class FindAllUsers {
 
         @Test
+        @DisplayName("GET /users - 페이지네이션으로 사용자 목록 조회")
         fun `페이지네이션으로 사용자 목록을 조회하면 200을 반환한다`() {
             // given - 여러 사용자 생성
             helper.createActiveStudent("25-001", "사용자1")
@@ -60,6 +61,7 @@ class UserManagementTest(
         }
 
         @Test
+        @DisplayName("GET /users - 첫 번째 페이지에 요청한 개수만큼의 사용자 반환")
         fun `첫 번째 페이지에는 요청한 개수만큼의 사용자가 반환된다`() {
             // given - 여러 사용자 생성
             helper.createActiveStudent("25-010", "사용자A")
@@ -76,6 +78,7 @@ class UserManagementTest(
         }
 
         @Test
+        @DisplayName("GET /users - 사용자 응답에 필요한 필드 모두 포함")
         fun `사용자 응답에 필요한 필드가 모두 포함된다`() {
             // given
             val user = helper.createActiveStudent("25-020", "테스트사용자")
@@ -96,6 +99,7 @@ class UserManagementTest(
         }
 
         @Test
+        @DisplayName("GET /users - 자수 필드 포함하여 조회")
         fun `사용자 목록 조회 - 자수 필드 포함`() {
             // given - 사용자 생성 및 과제 완료
             val user = helper.createActiveStudent("25-100", "자수테스트")
@@ -119,6 +123,7 @@ class UserManagementTest(
         }
 
         @Test
+        @DisplayName("GET /users - 학번으로 검색")
         fun `사용자 목록 조회 - 학번으로 검색`() {
             // given - 여러 사용자 생성
             helper.createActiveStudent("25-200", "김철수")
@@ -135,6 +140,7 @@ class UserManagementTest(
         }
 
         @Test
+        @DisplayName("GET /users - 이름으로 검색")
         fun `사용자 목록 조회 - 이름으로 검색`() {
             // given - 여러 사용자 생성
             helper.createActiveStudent("25-210", "김철수")
@@ -151,6 +157,7 @@ class UserManagementTest(
         }
 
         @Test
+        @DisplayName("GET /users - 권한으로 필터링")
         fun `사용자 목록 조회 - 권한으로 필터링`() {
             // given - 학생과 관리자 생성
             helper.createActiveStudent("25-220", "일반학생")
@@ -167,6 +174,7 @@ class UserManagementTest(
         }
 
         @Test
+        @DisplayName("GET /users - 학생만 필터링")
         fun `사용자 목록 조회 - 학생만 필터링`() {
             // given - 학생과 관리자 생성
             helper.createActiveStudent("25-230", "학생A")
@@ -183,6 +191,7 @@ class UserManagementTest(
         }
 
         @Test
+        @DisplayName("GET /users - 휴식 상태로 필터링")
         fun `사용자 목록 조회 - 휴식 상태로 필터링`() {
             // given - 활성 사용자와 휴식 사용자 생성
             helper.createActiveStudent("25-240", "활성사용자")
@@ -199,6 +208,7 @@ class UserManagementTest(
         }
 
         @Test
+        @DisplayName("GET /users - 활성 상태로 필터링")
         fun `사용자 목록 조회 - 활성 상태로 필터링`() {
             // given - 활성 사용자와 휴식 사용자 생성
             helper.createActiveStudent("25-250", "활성A")
@@ -215,6 +225,7 @@ class UserManagementTest(
         }
 
         @Test
+        @DisplayName("GET /users - 복합 조건 필터링")
         fun `사용자 목록 조회 - 복합 조건 필터링`() {
             // given - 다양한 조건의 사용자 생성
             helper.createActiveStudent("25-260", "김학생")
@@ -237,6 +248,7 @@ class UserManagementTest(
     inner class SortUsers {
 
         @Test
+        @DisplayName("GET /users - 정렬 파라미터 없이 기본 동작 유지")
         fun `정렬 파라미터 없이 조회하면 기본 동작을 유지한다`() {
             // given - 여러 사용자 생성
             helper.createActiveStudent("25-300", "가나다")
@@ -252,6 +264,7 @@ class UserManagementTest(
         }
 
         @Test
+        @DisplayName("GET /users - 학번 오름차순 정렬")
         fun `학번 오름차순 정렬로 조회한다`() {
             // given - 역순으로 생성해도 정렬되어야 함
             helper.createActiveStudent("25-320", "사용자C")
@@ -270,6 +283,7 @@ class UserManagementTest(
         }
 
         @Test
+        @DisplayName("GET /users - 학번 내림차순 정렬")
         fun `학번 내림차순 정렬로 조회한다`() {
             // given
             helper.createActiveStudent("25-330", "사용자A")
@@ -286,6 +300,7 @@ class UserManagementTest(
         }
 
         @Test
+        @DisplayName("GET /users - 이름 오름차순 정렬")
         fun `이름 오름차순 정렬로 조회한다`() {
             // given - 가나다순이 아닌 이름으로 생성
             helper.createActiveStudent("25-400", "박민수")
@@ -306,6 +321,7 @@ class UserManagementTest(
         }
 
         @Test
+        @DisplayName("GET /users - 이름 내림차순 정렬")
         fun `이름 내림차순 정렬로 조회한다`() {
             // given - 한글 자음 순서: 관리자(ㄱ) < 가가가(ㄱ) < 나나나(ㄴ) < 다다다(ㄷ)
             // 역순: 다다다 > 나나나 > 관리자 > 가가가 (관리자와 가가가의 ㄱ 순서 문제로 인해)
@@ -326,6 +342,7 @@ class UserManagementTest(
         }
 
         @Test
+        @DisplayName("GET /users - 경고 횟수 오름차순 정렬")
         fun `경고 횟수 오름차순 정렬로 조회한다`() {
             // given - 사용자 생성 후 경고 횟수 설정을 위해 과제 미완료 상황 시뮬레이션 불가하므로
             // 기본값(0)으로 생성된 사용자들로 테스트
@@ -343,6 +360,7 @@ class UserManagementTest(
         }
 
         @Test
+        @DisplayName("GET /users - 경고 횟수 내림차순 정렬")
         fun `경고 횟수 내림차순 정렬로 조회한다`() {
             // given
             helper.createActiveStudent("25-430", "사용자A")
@@ -358,6 +376,7 @@ class UserManagementTest(
         }
 
         @Test
+        @DisplayName("GET /users - 권한 오름차순 정렬")
         fun `권한 오름차순 정렬로 조회한다`() {
             // given - 관리자와 학생 혼재
             helper.createActiveStudent("25-440", "학생A")
@@ -377,6 +396,7 @@ class UserManagementTest(
         }
 
         @Test
+        @DisplayName("GET /users - 권한 내림차순 정렬")
         fun `권한 내림차순 정렬로 조회한다`() {
             // given - 관리자와 학생 혼재
             helper.createActiveStudent("25-450", "학생C")
@@ -396,6 +416,7 @@ class UserManagementTest(
         }
 
         @Test
+        @DisplayName("GET /users - 휴식 상태 오름차순 정렬")
         fun `휴식 상태 오름차순 정렬로 조회한다`() {
             // given - 활성 사용자와 휴식 사용자 혼재
             helper.createActiveStudent("25-460", "활성A")
@@ -416,6 +437,7 @@ class UserManagementTest(
         }
 
         @Test
+        @DisplayName("GET /users - 휴식 상태 내림차순 정렬")
         fun `휴식 상태 내림차순 정렬로 조회한다`() {
             // given - 활성 사용자와 휴식 사용자 혼재
             helper.createActiveStudent("25-470", "활성C")
@@ -436,6 +458,7 @@ class UserManagementTest(
         }
 
         @Test
+        @DisplayName("GET /users - 총 자수 오름차순 정렬")
         fun `총 자수로 오름차순 정렬한다 - completedCharCount와 adjustedCharCount 합산`() {
             // given - 3명의 사용자 생성, 각각 다른 자수 부여
             // 사용자 A: completedCharCount=1000, adjustedCharCount=500 -> total=1500
@@ -483,6 +506,7 @@ class UserManagementTest(
         }
 
         @Test
+        @DisplayName("GET /users - 총 자수 내림차순 정렬")
         fun `총 자수로 내림차순 정렬한다 - completedCharCount와 adjustedCharCount 합산`() {
             // given - 3명의 사용자 생성, 각각 다른 자수 부여
             // 사용자 A: completedCharCount=1000, adjustedCharCount=500 -> total=1500
@@ -530,6 +554,7 @@ class UserManagementTest(
         }
 
         @Test
+        @DisplayName("GET /users - 보정 자수만 있는 사용자도 정렬")
         fun `총 자수 정렬 - 보정 자수만 있는 사용자도 올바르게 정렬된다`() {
             // given - 완료 과제는 없지만 보정 자수만 있는 사용자
             // 사용자 D: completedCharCount=0, adjustedCharCount=100 -> total=100
@@ -560,6 +585,7 @@ class UserManagementTest(
         }
 
         @Test
+        @DisplayName("GET /users - 지원하지 않는 필드로 정렬 요청 시 400 반환")
         fun `지원하지 않는 필드로 정렬 요청 시 400 에러를 반환한다`() {
             // given
             helper.createActiveStudent("25-600", "사용자")
@@ -573,6 +599,7 @@ class UserManagementTest(
         }
 
         @Test
+        @DisplayName("GET /users - 정렬 필드 없이 방향만 지정 시 400 반환")
         fun `정렬 필드 없이 방향만 지정하면 400 에러를 반환한다`() {
             // given
             helper.createActiveStudent("25-601", "사용자")
@@ -586,6 +613,7 @@ class UserManagementTest(
         }
 
         @Test
+        @DisplayName("GET /users - 정렬과 조건 검색 조합")
         fun `정렬과 조건 검색을 조합한다 - 학생 중 총 자수 내림차순`() {
             // given - 학생과 관리자 혼재, 각각 다른 자수
             val studentA = helper.createActiveStudent("25-700", "학생A")
@@ -621,6 +649,7 @@ class UserManagementTest(
         }
 
         @Test
+        @DisplayName("GET /users - 정렬과 휴식 상태 필터 조합")
         fun `정렬과 휴식 상태 필터를 조합한다 - 활성 사용자 중 이름 오름차순`() {
             // given - 활성 사용자와 휴식 사용자 혼재
             helper.createActiveStudent("25-710", "활성C")
@@ -647,6 +676,7 @@ class UserManagementTest(
     inner class SetRestStatus {
 
         @Test
+        @DisplayName("POST /users/{userId}/rest - 휴식 상태로 변경")
         fun `휴식 상태로 변경하면 200을 반환한다`() {
             // given - 활성 사용자 2명 이상 생성 (마지막 사용자 제약 회피)
             helper.createActiveStudent("25-020", "사용자나")
@@ -669,6 +699,7 @@ class UserManagementTest(
         }
 
         @Test
+        @DisplayName("POST /users/{userId}/rest - 활성 상태로 변경")
         fun `활성 상태로 변경하면 200을 반환한다`() {
             // given - 휴식 상태 사용자 생성 (마지막 활성 사용자 제약 회피 위해 추가 사용자 생성)
             helper.createActiveStudent("25-021", "다른사용자")
@@ -692,6 +723,7 @@ class UserManagementTest(
         }
 
         @Test
+        @DisplayName("POST /users/{userId}/rest - 존재하지 않는 사용자면 400 반환")
         fun `존재하지 않는 사용자면 400을 반환한다`() {
             // given
             val nonExistentId = UUID.randomUUID()
@@ -711,6 +743,7 @@ class UserManagementTest(
 
         @Test
         @Transactional
+        @DisplayName("POST /users/{userId}/rest - 마지막 활성 사용자 휴식 변경 시 400 반환")
         fun `마지막 활성 사용자가 휴식 상태로 변경하면 400을 반환한다`() {
             // given - 단 하나의 활성 사용자
             val onlyActiveUser = helper.createActiveStudent("25-030", "유일한활성자")
@@ -735,6 +768,7 @@ class UserManagementTest(
     inner class AdjustCharCount {
 
         @Test
+        @DisplayName("POST /users/{userId}/adjust-char-count - 양수로 보정 자수 부여")
         fun `양수로 보정 자수를 부여하면 200을 반환한다`() {
             // given - 활성 사용자 생성
             val user = helper.createActiveStudent("25-040", "사용자")
@@ -757,6 +791,7 @@ class UserManagementTest(
         }
 
         @Test
+        @DisplayName("POST /users/{userId}/adjust-char-count - 음수로 보정 자수 차감")
         fun `음수로 보정 자수를 차감하면 200을 반환한다`() {
             // given - 보정 자수가 있는 사용자 생성
             val user = helper.createActiveStudent("25-041", "사용자")
@@ -780,6 +815,7 @@ class UserManagementTest(
         }
 
         @Test
+        @DisplayName("POST /users/{userId}/adjust-char-count - 존재하지 않는 사용자면 400 반환")
         fun `존재하지 않는 사용자면 400을 반환한다`() {
             // given
             val nonExistentId = UUID.randomUUID()
@@ -798,6 +834,7 @@ class UserManagementTest(
         }
 
         @Test
+        @DisplayName("POST /users/{userId}/adjust-char-count - 보정 자수가 0이면 400 반환")
         fun `보정 자수가 0이면 400을 반환한다`() {
             // given - 활성 사용자 생성
             val user = helper.createActiveStudent("25-042", "사용자")
@@ -822,6 +859,7 @@ class UserManagementTest(
     inner class AdjustWarningCount {
 
         @Test
+        @DisplayName("POST /users/{userId}/adjust-warning-count - 양수로 경고 부여")
         fun `양수로 경고를 부여하면 200을 반환한다`() {
             // given - 활성 사용자 생성
             val user = helper.createActiveStudent("25-043", "사용자")
@@ -844,6 +882,7 @@ class UserManagementTest(
         }
 
         @Test
+        @DisplayName("POST /users/{userId}/adjust-warning-count - 음수로 경고 차감")
         fun `음수로 경고를 차감하면 200을 반환한다`() {
             // given - 경고가 있는 사용자 생성
             val user = helper.createActiveStudent("25-044", "사용자")
@@ -867,6 +906,7 @@ class UserManagementTest(
         }
 
         @Test
+        @DisplayName("POST /users/{userId}/adjust-warning-count - 경고 총 갯수가 음수가 되면 400 반환")
         fun `경고 총 갯수가 음수가 된다면 400을 반환한다`() {
             // given - 경고가 있는 사용자 생성
             val user = helper.createActiveStudent("25-044", "사용자")
@@ -887,6 +927,7 @@ class UserManagementTest(
         }
 
         @Test
+        @DisplayName("POST /users/{userId}/adjust-warning-count - 존재하지 않는 사용자면 400 반환")
         fun `존재하지 않는 사용자면 400을 반환한다`() {
             // given
             val nonExistentId = UUID.randomUUID()
@@ -905,6 +946,7 @@ class UserManagementTest(
         }
 
         @Test
+        @DisplayName("POST /users/{userId}/adjust-warning-count - 경고 수가 0이면 400 반환")
         fun `경고 수가 0이면 400을 반환한다`() {
             // given - 활성 사용자 생성
             val user = helper.createActiveStudent("25-045", "사용자")
@@ -929,6 +971,7 @@ class UserManagementTest(
     inner class PromoteToAdmin {
 
         @Test
+        @DisplayName("POST /users/{userId}/promote - 일반 학생을 관리자로 승급")
         fun `일반 학생을 관리자로 승급하면 200을 반환한다`() {
             // given - 일반 학생 생성
             val student = helper.createActiveStudent("25-050", "학생")
@@ -945,6 +988,7 @@ class UserManagementTest(
         }
 
         @Test
+        @DisplayName("POST /users/{userId}/promote - 관리자 승급 시 알림 이메일 발송")
         fun `관리자 승급 시 승급 알림 이메일이 발송된다`() {
             // given - 이메일 구독 중인 일반 학생 생성
             val student = helper.createActiveStudent("25-051", "학생")
@@ -967,6 +1011,7 @@ class UserManagementTest(
         }
 
         @Test
+        @DisplayName("POST /users/{userId}/promote - 이미 관리자인 사용자 승급 시 400 반환")
         fun `이미 관리자인 사용자를 승급하면 400을 반환한다`() {
             // given - 다른 관리자 생성
             val otherAdmin = helper.createAdminAndGetToken("admin2", "관리자2")
@@ -981,6 +1026,7 @@ class UserManagementTest(
         }
 
         @Test
+        @DisplayName("POST /users/{userId}/promote - 존재하지 않는 사용자 승급 시 400 반환")
         fun `존재하지 않는 사용자를 승급하면 400을 반환한다`() {
             // given
             val nonExistentId = UUID.randomUUID()
@@ -1000,6 +1046,7 @@ class UserManagementTest(
     inner class DemoteFromAdmin {
 
         @Test
+        @DisplayName("POST /users/{userId}/demote - 관리자를 일반 학생으로 강등")
         fun `관리자를 일반 학생으로 강등하면 200을 반환한다`() {
             // given - 다른 관리자 생성
             val otherAdmin = helper.createAdminAndGetToken("admin2", "관리자2")
@@ -1016,6 +1063,7 @@ class UserManagementTest(
         }
 
         @Test
+        @DisplayName("POST /users/{userId}/demote - 관리자 강등 시 알림 이메일 발송")
         fun `관리자 강등 시 강등 알림 이메일이 발송된다`() {
             // given - 다른 관리자 생성
             val otherAdmin = helper.createAdminAndGetToken("admin3", "관리자3")
@@ -1038,6 +1086,7 @@ class UserManagementTest(
         }
 
         @Test
+        @DisplayName("POST /users/{userId}/demote - 자기 자신 강등 시 400 반환")
         fun `자기 자신을 강등하면 400을 반환한다`() {
             // when & then - adminInfo 사용자가 자기 자신을 강등 시도
             mockMvc.post("/users/${adminInfo.userId}/demote") {
@@ -1049,6 +1098,7 @@ class UserManagementTest(
         }
 
         @Test
+        @DisplayName("POST /users/{userId}/demote - 일반 학생 강등 시 400 반환")
         fun `일반 학생을 강등하면 400을 반환한다`() {
             // given - 일반 학생 생성
             val student = helper.createActiveStudent("25-060", "학생")
@@ -1063,6 +1113,7 @@ class UserManagementTest(
         }
 
         @Test
+        @DisplayName("POST /users/{userId}/demote - 마지막 관리자 강등 시 400 반환")
         fun `마지막 관리자를 강등하면 400을 반환한다`() {
             // given - 관리자가 한 명만 있는 상황 (이미 adminInfo만 존재)
             // adminInfo 외에 다른 관리자가 없으므로 마지막 관리자
@@ -1108,6 +1159,7 @@ class UserManagementTest(
         }
 
         @Test
+        @DisplayName("POST /users/{userId}/demote - 존재하지 않는 사용자 강등 시 400 반환")
         fun `존재하지 않는 사용자를 강등하면 400을 반환한다`() {
             // given
             val nonExistentId = UUID.randomUUID()

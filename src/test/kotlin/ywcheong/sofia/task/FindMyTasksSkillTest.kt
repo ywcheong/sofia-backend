@@ -42,6 +42,7 @@ class FindMyTasksSkillTest(
     inner class NoIncompleteTasks {
 
         @Test
+        @DisplayName("POST /kakao/skill - givenwork 요청 (미완료 과제 없음)")
         fun `미완료 과제가 없으면 안내 메시지를 반환한다`() {
             // given: 과제가 없는 활성 학생
             val student = helper.createActiveStudent("25-001", "홍길동")
@@ -56,6 +57,7 @@ class FindMyTasksSkillTest(
         }
 
         @Test
+        @DisplayName("POST /kakao/skill - givenwork 요청 (모든 과제 완료됨)")
         fun `모든 과제가 완료된 경우 안내 메시지를 반환한다`() {
             // given: 완료된 과제만 있는 학생
             val student = helper.createActiveStudent("25-002", "김철수")
@@ -81,6 +83,7 @@ class FindMyTasksSkillTest(
     inner class HasIncompleteTasks {
 
         @Test
+        @DisplayName("POST /kakao/skill - givenwork 요청 (미완료 과제 있음)")
         fun `미완료 과제가 있으면 목록을 반환한다`() {
             // given: 미완료 과제가 있는 학생
             val student = helper.createActiveStudent("25-003", "박영희")
@@ -102,6 +105,7 @@ class FindMyTasksSkillTest(
         }
 
         @Test
+        @DisplayName("POST /kakao/skill - givenwork 요청 (과제 오래된 순 정렬)")
         fun `과제 목록은 오래된 순으로 정렬된다`() {
             // given: 여러 미완료 과제가 있는 학생
             val student = helper.createActiveStudent("25-004", "이민수")
@@ -132,6 +136,7 @@ class FindMyTasksSkillTest(
         }
 
         @Test
+        @DisplayName("POST /kakao/skill - givenwork 요청 (외부 과제 유형 표시)")
         fun `외부 과제 유형이 올바르게 표시된다`() {
             // given: 외부 과제가 있는 학생
             val student = helper.createActiveStudent("25-005", "정우성")
@@ -152,6 +157,7 @@ class FindMyTasksSkillTest(
         }
 
         @Test
+        @DisplayName("POST /kakao/skill - givenwork 요청 (경과 시간 표시)")
         fun `경과 시간이 올바르게 표시된다`() {
             // given: 2시간 전에 할당된 과제
             val student = helper.createActiveStudent("25-006", "한지민")
@@ -172,6 +178,7 @@ class FindMyTasksSkillTest(
         }
 
         @Test
+        @DisplayName("POST /kakao/skill - givenwork 요청 (빠른 응답 포함)")
         fun `빠른 응답에 홈 메뉴와 끝난 번역 보고하기가 포함된다`() {
             // given: 미완료 과제가 있는 학생
             val student = helper.createActiveStudent("25-007", "강호동")
@@ -197,6 +204,7 @@ class FindMyTasksSkillTest(
     inner class LateTasks {
 
         @Test
+        @DisplayName("POST /kakao/skill - givenwork 요청 (지각 과제 경고)")
         fun `지각된 과제는 지각 경고 메시지를 포함한다`() {
             // given: 49시간 전에 할당된 미완료 과제 (48시간 임계값 초과)
             val student = helper.createActiveStudent("25-008", "지각학생")
@@ -219,6 +227,7 @@ class FindMyTasksSkillTest(
         }
 
         @Test
+        @DisplayName("POST /kakao/skill - givenwork 요청 (정상 및 지각 과제 혼재)")
         fun `정상 과제와 지각 과제가 함께 있으면 각각 다르게 표시된다`() {
             // given: 정상 과제와 지각 과제가 함께 있는 학생
             val student = helper.createActiveStudent("25-009", "복합학생")
@@ -250,6 +259,7 @@ class FindMyTasksSkillTest(
         }
 
         @Test
+        @DisplayName("POST /kakao/skill - givenwork 요청 (다중 지각 과제)")
         fun `여러 개의 지각 과제가 있어도 모두 경고 메시지가 포함된다`() {
             // given: 여러 지각 과제가 있는 학생
             val student = helper.createActiveStudent("25-010", "다중지각학생")
@@ -286,6 +296,7 @@ class FindMyTasksSkillTest(
     inner class UnauthenticatedUser {
 
         @Test
+        @DisplayName("POST /kakao/skill - givenwork 요청 (미인증 사용자)")
         fun `미인증 사용자가 요청하면 안내 메시지를 반환한다`() {
             // when: 미인증 사용자의 givenwork 요청
             val result = simulator.sendMessage(fromUser = null, action = "givenwork")
@@ -302,6 +313,7 @@ class FindMyTasksSkillTest(
     inner class ElapsedTimeFormatting {
 
         @Test
+        @DisplayName("POST /kakao/skill - givenwork 요청 (방금 할당된 과제)")
         fun `방금 할당된 과제는 방금으로 표시된다`() {
             // given: 방금 할당된 과제
             val student = helper.createActiveStudent("25-011", "신규학생")
@@ -321,6 +333,7 @@ class FindMyTasksSkillTest(
         }
 
         @Test
+        @DisplayName("POST /kakao/skill - givenwork 요청 (1일 이상 경과 포맷팅)")
         fun `1일 이상 경과한 과제는 분을 생략한다`() {
             // given: 1일 2시간 전에 할당된 과제
             val student = helper.createActiveStudent("25-012", "장기학생")

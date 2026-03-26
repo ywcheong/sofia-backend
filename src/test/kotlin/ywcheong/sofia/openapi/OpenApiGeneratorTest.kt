@@ -18,6 +18,7 @@ class OpenApiGeneratorTest {
     private lateinit var mockMvc: MockMvc
 
     @Test
+    @DisplayName("GET /v3/api-docs - OpenAPI 스펙 생성")
     fun `OpenAPI JSON 생성`() {
         val result = mockMvc.get("/v3/api-docs")
             .andExpect { status { isOk() } }

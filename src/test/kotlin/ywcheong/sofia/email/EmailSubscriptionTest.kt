@@ -38,6 +38,7 @@ class EmailSubscriptionTest(
     inner class GetStatus {
 
         @Test
+        @DisplayName("GET /api/email/subscription/{token}/status - 수신 상태 조회")
         fun `토큰으로 수신 상태를 조회할 수 있다`() {
             // given: 사용자 생성
             val user = helper.createActiveStudent("2024001", "홍길동")
@@ -51,6 +52,7 @@ class EmailSubscriptionTest(
         }
 
         @Test
+        @DisplayName("GET /api/email/subscription/{token}/status - 잘못된 토큰으로 조회 시 에러")
         fun `잘못된 토큰으로 조회하면 에러가 발생한다`() {
             // when & then: 존재하지 않는 토큰
             mockMvc.perform(get("/api/email/subscription/00000000-0000-0000-0000-000000000000/status"))
@@ -63,6 +65,7 @@ class EmailSubscriptionTest(
     inner class Unsubscribe {
 
         @Test
+        @DisplayName("PUT /api/email/subscription/{token}/unsubscribe - 수신 거부")
         fun `토큰으로 수신 거부할 수 있다`() {
             // given: 사용자 생성
             val user = helper.createActiveStudent("2024002", "김철수")
@@ -85,6 +88,7 @@ class EmailSubscriptionTest(
     inner class Subscribe {
 
         @Test
+        @DisplayName("PUT /api/email/subscription/{token}/subscribe - 수신 허용")
         fun `수신 거부 후 다시 수신 허용할 수 있다`() {
             // given: 사용자 생성 후 수신 거부
             val user = helper.createActiveStudent("2024003", "이영희")
@@ -110,6 +114,7 @@ class EmailSubscriptionTest(
     inner class UnsubscribedEmailSend {
 
         @Test
+        @DisplayName("EmailSendService.sendEmail - 수신 거부자에게 발송 생략")
         fun `수신 거부한 사용자에게는 이메일이 발송되지 않는다`() {
             // given: 사용자 생성 후 수신 거부
             val user = helper.createActiveStudent("2024004", "박수신거부")
@@ -140,6 +145,7 @@ class EmailSubscriptionTest(
         }
 
         @Test
+        @DisplayName("EmailSendService.sendEmail - 수신 허용자에게 정상 발송")
         fun `수신 허용한 사용자에게는 이메일이 정상 발송된다`() {
             // given: 수신 허용 상태의 사용자
             val user = helper.createActiveStudent("2024005", "김수신허용")

@@ -44,6 +44,7 @@ class TranslationTaskTest(
     inner class FindAllTasks {
 
         @Test
+        @DisplayName("GET /tasks - 페이지네이션으로 과제 목록 조회")
         fun `페이지네이션으로 과제 목록을 조회하면 200을 반환한다`() {
             // given - 여러 과제 생성
             val user1 = helper.createActiveStudent("25-001", "사용자1")
@@ -65,6 +66,7 @@ class TranslationTaskTest(
         }
 
         @Test
+        @DisplayName("GET /tasks - 첫 번째 페이지 과제 조회")
         fun `첫 번째 페이지에는 요청한 개수만큼의 과제가 반환된다`() {
             // given - 여러 과제 생성
             val user = helper.createActiveStudent("25-010", "사용자A")
@@ -82,6 +84,7 @@ class TranslationTaskTest(
         }
 
         @Test
+        @DisplayName("GET /tasks - 응답 필드 전체 포함 확인")
         fun `과제 응답에 필요한 필드가 모두 포함된다`() {
             // given
             val user = helper.createActiveStudent("25-020", "테스트사용자")
@@ -107,6 +110,7 @@ class TranslationTaskTest(
         }
 
         @Test
+        @DisplayName("GET /tasks - 과제 설명 부분 검색")
         fun `search 파라미터로 과제 설명을 부분 검색할 수 있다`() {
             // given
             val user = helper.createActiveStudent("25-021", "검색테스트사용자")
@@ -125,6 +129,7 @@ class TranslationTaskTest(
         }
 
         @Test
+        @DisplayName("GET /tasks - 과제 타입 필터링")
         fun `taskType 파라미터로 과제 타입을 필터링할 수 있다`() {
             // given
             val user = helper.createActiveStudent("25-022", "타입필터사용자")
@@ -142,6 +147,7 @@ class TranslationTaskTest(
         }
 
         @Test
+        @DisplayName("GET /tasks - 배정 타입 필터링")
         fun `assignmentType 파라미터로 배정 타입을 필터링할 수 있다`() {
             // given
             val user1 = helper.createActiveStudent("25-023", "자동배정사용자")
@@ -170,6 +176,7 @@ class TranslationTaskTest(
         }
 
         @Test
+        @DisplayName("GET /tasks - 완료 상태 필터링")
         fun `completed 파라미터로 완료 상태를 필터링할 수 있다`() {
             // given
             val user = helper.createActiveStudent("25-025", "완료필터사용자")
@@ -197,6 +204,7 @@ class TranslationTaskTest(
         }
 
         @Test
+        @DisplayName("GET /tasks - 담당자 필터링")
         fun `assigneeId 파라미터로 담당자를 필터링할 수 있다`() {
             // given
             val user1 = helper.createActiveStudent("25-026", "담당자1")
@@ -215,6 +223,7 @@ class TranslationTaskTest(
         }
 
         @Test
+        @DisplayName("GET /tasks - 복합 조건 필터링")
         fun `복합 조건으로 필터링할 수 있다`() {
             // given
             val user1 = helper.createActiveStudent("25-028", "복합조건1")
@@ -252,6 +261,7 @@ class TranslationTaskTest(
         }
 
         @Test
+        @DisplayName("GET /tasks - 지각 완료 과제의 late 플래그 확인")
         fun `48시간 초과하여 완료된 과제는 late가 true다`() {
             // given - 49시간 전에 할당된 과제를 완료
             val user = helper.createActiveStudent("25-030", "지각과제사용자")
@@ -276,6 +286,7 @@ class TranslationTaskTest(
         }
 
         @Test
+        @DisplayName("GET /tasks - 정상 완료 과제의 late 플래그 확인")
         fun `48시간 미만에 완료된 과제는 late가 false다`() {
             // given - 1시간 전에 할당된 과제를 완료
             val user = helper.createActiveStudent("25-031", "정상과제사용자")
@@ -300,6 +311,7 @@ class TranslationTaskTest(
         }
 
         @Test
+        @DisplayName("GET /tasks - 미완료 과제의 late 플래그 확인")
         fun `미완료 과제는 late가 false다`() {
             // given
             val user = helper.createActiveStudent("25-031a", "미완료사용자")
@@ -319,6 +331,7 @@ class TranslationTaskTest(
         }
 
         @Test
+        @DisplayName("GET /tasks - 리마인더 발송 과제의 remindedAt 확인")
         fun `리마인더 발송된 과제는 remindedAt에 시간값이 있다`() {
             // given
             val user = helper.createActiveStudent("25-032", "리마인더사용자")
@@ -340,6 +353,7 @@ class TranslationTaskTest(
         }
 
         @Test
+        @DisplayName("GET /tasks - 리마인더 미발송 과제의 remindedAt 확인")
         fun `리마인더 미발송 과제는 remindedAt이 null이다`() {
             // given
             val user = helper.createActiveStudent("25-033", "미발송사용자")
@@ -364,6 +378,7 @@ class TranslationTaskTest(
     inner class SortTasks {
 
         @Test
+        @DisplayName("GET /tasks - 정렬 파라미터 없이 기본 조회")
         fun `정렬 파라미터 없이 조회하면 기본 동작을 유지한다`() {
             // given - 여러 과제 생성
             val user = helper.createActiveStudent("25-600", "사용자A")
@@ -381,6 +396,7 @@ class TranslationTaskTest(
         }
 
         @Test
+        @DisplayName("GET /tasks - 배정 시간 오름차순 정렬")
         fun `배정 시간 오름차순 정렬로 조회한다`() {
             // given - 시간 차이를 두고 과제 생성
             val user = helper.createActiveStudent("25-601", "사용자B")
@@ -407,6 +423,7 @@ class TranslationTaskTest(
         }
 
         @Test
+        @DisplayName("GET /tasks - 배정 시간 내림차순 정렬")
         fun `배정 시간 내림차순 정렬로 조회한다`() {
             // given - 시간 차이를 두고 과제 생성
             val user = helper.createActiveStudent("25-602", "사용자C")
@@ -433,6 +450,7 @@ class TranslationTaskTest(
         }
 
         @Test
+        @DisplayName("GET /tasks - 완료 시간 오름차순 정렬")
         fun `완료 시간 오름차순 정렬로 조회한다`() {
             // given - 완료 시간이 다른 과제들 생성
             val user = helper.createActiveStudent("25-603", "사용자D")
@@ -464,6 +482,7 @@ class TranslationTaskTest(
         }
 
         @Test
+        @DisplayName("GET /tasks - 완료 시간 내림차순 정렬")
         fun `완료 시간 내림차순 정렬로 조회한다`() {
             // given - 완료 시간이 다른 과제들 생성
             val user = helper.createActiveStudent("25-604", "사용자E")
@@ -495,6 +514,7 @@ class TranslationTaskTest(
         }
 
         @Test
+        @DisplayName("GET /tasks - 글자 수 오름차순 정렬")
         fun `글자 수 오름차순 정렬로 조회한다`() {
             // given - 글자 수가 다른 완료된 과제들 생성
             val user = helper.createActiveStudent("25-605", "사용자F")
@@ -520,6 +540,7 @@ class TranslationTaskTest(
         }
 
         @Test
+        @DisplayName("GET /tasks - 글자 수 내림차순 정렬")
         fun `글자 수 내림차순 정렬로 조회한다`() {
             // given - 글자 수가 다른 완료된 과제들 생성
             val user = helper.createActiveStudent("25-606", "사용자G")
@@ -545,6 +566,7 @@ class TranslationTaskTest(
         }
 
         @Test
+        @DisplayName("GET /tasks - 지원하지 않는 정렬 필드 오류")
         fun `지원하지 않는 필드로 정렬 요청 시 400 에러를 반환한다`() {
             // given
             val user = helper.createActiveStudent("25-607", "사용자H")
@@ -559,6 +581,7 @@ class TranslationTaskTest(
         }
 
         @Test
+        @DisplayName("GET /tasks - 정렬 필드 누락 오류")
         fun `정렬 필드 없이 방향만 지정하면 400 에러를 반환한다`() {
             // given
             val user = helper.createActiveStudent("25-608", "사용자I")
@@ -573,6 +596,7 @@ class TranslationTaskTest(
         }
 
         @Test
+        @DisplayName("GET /tasks - 정렬과 조건 검색 조합")
         fun `정렬과 조건 검색을 조합한다 - 완료된 과제 중 글자 수 내림차순`() {
             // given - 완료/미완료 혼재
             val user = helper.createActiveStudent("25-609", "사용자J")
@@ -596,6 +620,7 @@ class TranslationTaskTest(
         }
 
         @Test
+        @DisplayName("GET /tasks - 정렬과 과제 타입 필터 조합")
         fun `정렬과 과제 타입 필터를 조합한다`() {
             // given - 여러 타입의 과제 생성
             val user = helper.createActiveStudent("25-610", "사용자K")
@@ -625,6 +650,7 @@ class TranslationTaskTest(
     inner class CreateTask {
 
         @Test
+        @DisplayName("POST /tasks - 자동 배정으로 과제 생성")
         fun `자동 배정으로 과제를 생성하면 200과 배정된 번역버디 정보를 반환한다`() {
             // given - 활성 번역버디 생성
             val assignee = helper.createActiveStudent("25-001", "홍길동")
@@ -649,6 +675,7 @@ class TranslationTaskTest(
         }
 
         @Test
+        @DisplayName("POST /tasks - 수동 배정으로 과제 생성")
         fun `수동 배정으로 과제를 생성하면 200과 지정된 번역버디 정보를 반환한다`() {
             // given - 활성 번역버디 생성
             val assignee = helper.createActiveStudent("25-002", "김철수")
@@ -674,6 +701,7 @@ class TranslationTaskTest(
         }
 
         @Test
+        @DisplayName("POST /tasks - 수동 배정 시 담당자 ID 누락 오류")
         fun `수동 배정 시 assigneeId가 없으면 400을 반환한다`() {
             // given
             val request = mapOf(
@@ -693,6 +721,7 @@ class TranslationTaskTest(
         }
 
         @Test
+        @DisplayName("POST /tasks - 과제명 길이 초과 오류")
         fun `과제명이 50자를 초과하면 400을 반환한다`() {
             // given
             val longDescription = "a".repeat(51)
@@ -713,6 +742,7 @@ class TranslationTaskTest(
         }
 
         @Test
+        @DisplayName("POST /tasks - 중복 과제 생성 오류")
         fun `이미 존재하는 과제를 다시 생성하면 400을 반환한다`() {
             // given - 동일한 과제 생성
             val assignee = helper.createActiveStudent("25-003", "박영희")
@@ -739,6 +769,7 @@ class TranslationTaskTest(
         }
 
         @Test
+        @DisplayName("POST /tasks - 휴식 상태 사용자 배정 오류")
         fun `휴식 상태인 번역버디에게 수동 배정하면 400을 반환한다`() {
             // given - 휴식 상태 번역버디 생성 (마지막 활성 사용자 제약 회피 위해 추가 사용자 생성)
             helper.createActiveStudent("25-003", "다른사용자")
@@ -763,6 +794,7 @@ class TranslationTaskTest(
         }
 
         @Test
+        @DisplayName("POST /tasks - 라운드로빈 배정 검증")
         fun `라운드로빈으로 k번 배정하면 서로 다른 k명이 배정되고 마지막은 작업받지 않은 사용자다`() {
             // given - 활성 번역버디 3명 생성
             val user1 = helper.createActiveStudent("25-100", "사용자1")
@@ -791,6 +823,7 @@ class TranslationTaskTest(
         }
 
         @Test
+        @DisplayName("POST /tasks - 과제 생성 시 이메일 발송")
         fun `과제 생성 시 배정된 번역버디에게 이메일이 발송된다`() {
             // given - 활성 번역버디 생성
             val assignee = helper.createActiveStudent("25-200", "이메일테스트")
@@ -825,6 +858,7 @@ class TranslationTaskTest(
     inner class GeneratePerformanceReport {
 
         @Test
+        @DisplayName("GET /tasks/reports/performance.csv - 성과 보고서 CSV 다운로드")
         fun `관리자가 성과 보고서를 요청하면 200과 CSV 파일을 반환한다`() {
             // when & then
             mockMvc.get("/tasks/reports/performance.csv") {
@@ -837,6 +871,7 @@ class TranslationTaskTest(
         }
 
         @Test
+        @DisplayName("GET /tasks/reports/performance.csv - 번역 자수 포함 확인")
         fun `완료된 과제가 있으면 CSV에 번역 자수가 포함된다`() {
             // given - 활성 학생과 완료된 과제 생성
             val student = helper.createActiveStudent("25-051", "홍길동")
@@ -862,6 +897,7 @@ class TranslationTaskTest(
         }
 
         @Test
+        @DisplayName("GET /tasks/reports/performance.csv - 다중 사용자 성과 포함")
         fun `여러 사용자의 과제가 있으면 CSV에 모두 포함된다`() {
             // given - 여러 활성 학생과 완료된 과제 생성
             val student1 = helper.createActiveStudent("25-060", "학생1")
@@ -901,6 +937,7 @@ class TranslationTaskTest(
     inner class ChangeAssignee {
 
         @Test
+        @DisplayName("PATCH /tasks/{taskId}/assignee - 담당자 변경")
         fun `미완료 과제의 담당자를 변경하면 200과 새 담당자 정보를 반환한다`() {
             // given - 과제와 새 담당자 생성
             val originalAssignee = helper.createActiveStudent("25-400", "원래담당자")
@@ -930,6 +967,7 @@ class TranslationTaskTest(
         }
 
         @Test
+        @DisplayName("PATCH /tasks/{taskId}/assignee - 완료 과제 담당자 변경 불가")
         fun `완료된 과제의 담당자를 변경하면 400을 반환한다`() {
             // given - 완료된 과제 생성
             val originalAssignee = helper.createActiveStudent("25-402", "완료과제담당자")
@@ -956,6 +994,7 @@ class TranslationTaskTest(
         }
 
         @Test
+        @DisplayName("PATCH /tasks/{taskId}/assignee - 존재하지 않는 과제 오류")
         fun `존재하지 않는 과제의 담당자를 변경하면 400을 반환한다`() {
             // given
             val newAssignee = helper.createActiveStudent("25-404", "새담당자")
@@ -976,6 +1015,7 @@ class TranslationTaskTest(
         }
 
         @Test
+        @DisplayName("PATCH /tasks/{taskId}/assignee - 존재하지 않는 사용자 오류")
         fun `존재하지 않는 사용자로 담당자를 변경하면 400을 반환한다`() {
             // given
             val originalAssignee = helper.createActiveStudent("25-405", "원래담당자")
@@ -1001,6 +1041,7 @@ class TranslationTaskTest(
         }
 
         @Test
+        @DisplayName("PATCH /tasks/{taskId}/assignee - 휴식 상태 사용자 오류")
         fun `휴식 상태인 사용자로 담당자를 변경하면 400을 반환한다`() {
             // given
             val originalAssignee = helper.createActiveStudent("25-406", "원래담당자")
@@ -1028,6 +1069,7 @@ class TranslationTaskTest(
         }
 
         @Test
+        @DisplayName("PATCH /tasks/{taskId}/assignee - 담당자 변경 시 이메일 발송")
         fun `담당자 변경 시 새 담당자에게 이메일이 발송된다`() {
             // given
             val originalAssignee = helper.createActiveStudent("25-409", "원래담당자")
@@ -1067,6 +1109,7 @@ class TranslationTaskTest(
     inner class DeleteTask {
 
         @Test
+        @DisplayName("DELETE /tasks/{taskId} - 과제 삭제")
         fun `과제를 삭제하면 204를 반환한다`() {
             // given
             val assignee = helper.createActiveStudent("25-500", "삭제테스트담당자")
@@ -1085,6 +1128,7 @@ class TranslationTaskTest(
         }
 
         @Test
+        @DisplayName("DELETE /tasks/{taskId} - 삭제 후 목록에서 제외 확인")
         fun `삭제된 과제는 목록에서 조회되지 않는다`() {
             // given
             val assignee = helper.createActiveStudent("25-501", "삭제조회테스트")
@@ -1113,6 +1157,7 @@ class TranslationTaskTest(
         }
 
         @Test
+        @DisplayName("DELETE /tasks/{taskId} - 존재하지 않는 과제 삭제 오류")
         fun `존재하지 않는 과제를 삭제하면 400을 반환한다`() {
             // given
             val nonExistentTaskId = UUID.randomUUID()
@@ -1126,6 +1171,7 @@ class TranslationTaskTest(
         }
 
         @Test
+        @DisplayName("DELETE /tasks/{taskId} - 완료된 과제 삭제")
         fun `완료된 과제도 삭제할 수 있다`() {
             // given - 완료된 과제 생성
             val assignee = helper.createActiveStudent("25-502", "완료과제삭제테스트")

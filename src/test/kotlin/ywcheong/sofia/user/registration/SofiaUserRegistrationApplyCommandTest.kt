@@ -12,7 +12,7 @@ class SofiaUserRegistrationApplyCommandTest {
 
     @Nested
     @DisplayName("학번 형식 검증")
-    inner class StudentNumberValidation {
+    inner class ValidateStudentNumber {
 
         @Test
         fun `유효한 학번은 예외를 던지지 않는다`() {
@@ -72,7 +72,7 @@ class SofiaUserRegistrationApplyCommandTest {
 
     @Nested
     @DisplayName("이름 형식 검증")
-    inner class StudentNameValidation {
+    inner class ValidateStudentName {
 
         @Test
         fun `유효한 한글 이름은 예외를 던지지 않는다`() {

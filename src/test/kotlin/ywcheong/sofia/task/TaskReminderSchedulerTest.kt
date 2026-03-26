@@ -20,7 +20,6 @@ import java.util.UUID
 class TaskReminderSchedulerTest(
     private val helper: TestScenarioHelper,
     private val taskReminderScheduler: TaskReminderScheduler,
-    private val translationTaskRepository: TranslationTaskRepository,
 ) {
 
     @BeforeEach
@@ -49,7 +48,7 @@ class TaskReminderSchedulerTest(
             taskReminderScheduler.checkAndSendReminders()
 
             // then - 리마인드 표시됨
-            val updatedTask = translationTaskRepository.findById(task.id).orElseThrow()
+            val updatedTask = helper.findTaskById(task.id)!!
             assertThat(updatedTask.reminded).isTrue()
             assertThat(updatedTask.remindedAt).isNotNull()
         }
@@ -71,7 +70,7 @@ class TaskReminderSchedulerTest(
             taskReminderScheduler.checkAndSendReminders()
 
             // then - 리마인드되지 않음
-            val updatedTask = translationTaskRepository.findById(task.id).orElseThrow()
+            val updatedTask = helper.findTaskById(task.id)!!
             assertThat(updatedTask.reminded).isFalse()
             assertThat(updatedTask.remindedAt).isNull()
         }
@@ -91,13 +90,13 @@ class TaskReminderSchedulerTest(
             helper.setTaskAssignedAt(task.id, assignedAt)
 
             // 과제 완료 처리
-            completeTask(task.id)
+            helper.completeTask(task.id)
 
             // when
             taskReminderScheduler.checkAndSendReminders()
 
             // then - 리마인드되지 않음
-            val updatedTask = translationTaskRepository.findById(task.id).orElseThrow()
+            val updatedTask = helper.findTaskById(task.id)!!
             assertThat(updatedTask.reminded).isFalse()
         }
 
@@ -116,7 +115,7 @@ class TaskReminderSchedulerTest(
 
             // 첫 번째 리마인드
             taskReminderScheduler.checkAndSendReminders()
-            val firstRemindedAt = translationTaskRepository.findById(task.id).orElseThrow().remindedAt
+            val firstRemindedAt = helper.findTaskById(task.id)!!.remindedAt
 
             // 추가 시간 경과 시뮬레이션 - assignedAt을 더 과거로
             helper.setTaskAssignedAt(task.id, Instant.now().minusSeconds(72 * 60 * 60))
@@ -125,7 +124,7 @@ class TaskReminderSchedulerTest(
             taskReminderScheduler.checkAndSendReminders()
 
             // then - remindedAt이 변경되지 않음 (기존 리마인드 기록 유지)
-            val updatedTask = translationTaskRepository.findById(task.id).orElseThrow()
+            val updatedTask = helper.findTaskById(task.id)!!
             assertThat(updatedTask.remindedAt).isEqualTo(firstRemindedAt)
         }
 
@@ -145,7 +144,7 @@ class TaskReminderSchedulerTest(
 
             // then - 예외 없이 정상 완료
             // 모든 과제가 리마인드되지 않음
-            val allTasks = translationTaskRepository.findAllIncompleteTasks()
+            val allTasks = helper.findAllIncompleteTasks()
             assertThat(allTasks).allMatch { !it.reminded }
         }
 
@@ -181,9 +180,9 @@ class TaskReminderSchedulerTest(
             taskReminderScheduler.checkAndSendReminders()
 
             // then - 모든 과제가 리마인드됨
-            val updatedTask1 = translationTaskRepository.findById(task1.id).orElseThrow()
-            val updatedTask2 = translationTaskRepository.findById(task2.id).orElseThrow()
-            val updatedTask3 = translationTaskRepository.findById(task3.id).orElseThrow()
+            val updatedTask1 = helper.findTaskById(task1.id)!!
+            val updatedTask2 = helper.findTaskById(task2.id)!!
+            val updatedTask3 = helper.findTaskById(task3.id)!!
 
             assertThat(updatedTask1.reminded).isTrue()
             assertThat(updatedTask2.reminded).isTrue()
@@ -272,23 +271,4 @@ class TaskReminderSchedulerTest(
         }
     }
 
-    // 헬퍼 메서드: 과제 완료 처리 (리포지토리 직접 접근)
-    // TestScenarioHelper 규칙에 따라 공개 API를 사용해야 하지만,
-    // 스케줄러 테스트에서는 MockMvc 의존성이 없으므로 직접 처리
-    private fun completeTask(taskId: UUID) {
-        val task = translationTaskRepository.findById(taskId).orElseThrow()
-        translationTaskRepository.save(
-            TranslationTask(
-                id = task.id,
-                taskType = task.taskType,
-                taskDescription = task.taskDescription,
-                assignee = task.assignee,
-                assignmentType = task.assignmentType,
-                assignedAt = task.assignedAt,
-                completedAt = Instant.now(),
-                characterCount = 1000,
-                remindedAt = task.remindedAt,
-            )
-        )
-    }
 }

@@ -44,6 +44,7 @@ class SystemPhaseTest(
     inner class GetCurrentPhase {
 
         @Test
+        @DisplayName("GET /system-phase - 현재 페이즈 조회")
         fun `현재 페이즈를 조회하면 200과 현재 및 다음 페이즈 정보를 반환한다`() {
             // when & then
             mockMvc.get("/system-phase") {
@@ -65,6 +66,7 @@ class SystemPhaseTest(
     inner class CheckRecruitmentAvailability {
 
         @Test
+        @DisplayName("GET /system-phase/transit/recruitment/availability - RECRUITMENT 전환 가능 여부")
         fun `RECRUITMENT 전환 가능 여부를 조회하면 항상 available true를 반환한다`() {
             // when & then
             mockMvc.get("/system-phase/transit/recruitment/availability") {
@@ -81,6 +83,7 @@ class SystemPhaseTest(
     inner class CheckTranslationAvailability {
 
         @Test
+        @DisplayName("GET /system-phase/transit/translation/availability - 대기 신청 없음")
         fun `대기 신청이 없으면 available true를 반환한다`() {
             // when & then
             mockMvc.get("/system-phase/transit/translation/availability") {
@@ -93,6 +96,7 @@ class SystemPhaseTest(
         }
 
         @Test
+        @DisplayName("GET /system-phase/transit/translation/availability - 대기 신청 있음")
         fun `대기 신청이 있으면 available false와 신청자 정보를 반환한다`() {
             // given - 대기 신청 생성
             simulator.sendMessageFromAnonymous(
@@ -119,6 +123,7 @@ class SystemPhaseTest(
     inner class CheckSettlementAvailability {
 
         @Test
+        @DisplayName("GET /system-phase/transit/settlement/availability - 차단요소 없음")
         fun `대기 신청과 미완료 과제가 없으면 available true를 반환한다`() {
             // given - TRANSLATION 페이즈로 설정
             val newAdminInfo = helper.setupScenarioWithAdmin(SystemPhase.TRANSLATION)
@@ -135,6 +140,7 @@ class SystemPhaseTest(
         }
 
         @Test
+        @DisplayName("GET /system-phase/transit/settlement/availability - 미완료 과제 있음")
         fun `미완료 과제가 있으면 available false와 과제 목록을 반환한다`() {
             // given - TRANSLATION 페이즈로 설정
             val newAdminInfo = helper.setupScenarioWithAdmin(SystemPhase.TRANSLATION)
@@ -159,6 +165,7 @@ class SystemPhaseTest(
         }
 
         @Test
+        @DisplayName("GET /system-phase/transit/settlement/availability - 대기 신청 있음")
         fun `대기 신청이 있으면 pendingRegistrations에 신청자 정보를 포함한다`() {
             // given - TRANSLATION 페이즈로 설정
             val newAdminInfo = helper.setupScenarioWithAdmin(SystemPhase.TRANSLATION)
@@ -186,6 +193,7 @@ class SystemPhaseTest(
     inner class CheckDeactivationAvailability {
 
         @Test
+        @DisplayName("GET /system-phase/transit/deactivation/availability - DEACTIVATION 전환 가능 여부")
         fun `DEACTIVATION 전환 가능 여부를 조회하면 항상 available true를 반환한다`() {
             // when & then
             mockMvc.get("/system-phase/transit/deactivation/availability") {
@@ -204,6 +212,7 @@ class SystemPhaseTest(
     inner class TransitToRecruitment {
 
         @Test
+        @DisplayName("POST /system-phase/transit/recruitment - DEACTIVATION에서 전환")
         fun `DEACTIVATION에서 RECRUITMENT로 전환하면 200을 반환한다`() {
             // given - DEACTIVATION 상태로 설정
             val newAdminInfo = helper.setupScenarioWithAdmin(SystemPhase.DEACTIVATION)
@@ -225,6 +234,7 @@ class SystemPhaseTest(
     inner class TransitToTranslation {
 
         @Test
+        @DisplayName("POST /system-phase/transit/translation - RECRUITMENT에서 전환")
         fun `RECRUITMENT에서 TRANSLATION으로 전환하면 200을 반환한다`() {
             // when & then
             mockMvc.post("/system-phase/transit/translation") {
@@ -238,6 +248,7 @@ class SystemPhaseTest(
         }
 
         @Test
+        @DisplayName("POST /system-phase/transit/translation - 잘못된 페이즈에서 전환 시도")
         fun `잘못된 페이즈에서 TRANSLATION으로 전환하면 400을 반환한다`() {
             // given - DEACTIVATION 상태로 설정 (잘못된 시작 페이즈)
             val newAdminInfo = helper.setupScenarioWithAdmin(SystemPhase.DEACTIVATION)
@@ -252,6 +263,7 @@ class SystemPhaseTest(
         }
 
         @Test
+        @DisplayName("POST /system-phase/transit/translation - 이미 TRANSLATION인 상태에서 재전환 시도")
         fun `이미 TRANSLATION인 상태에서 다시 전환하면 400을 반환한다`() {
             // given - TRANSLATION 상태로 설정
             val newAdminInfo = helper.setupScenarioWithAdmin(SystemPhase.TRANSLATION)
@@ -271,6 +283,7 @@ class SystemPhaseTest(
     inner class TransitToSettlement {
 
         @Test
+        @DisplayName("POST /system-phase/transit/settlement - TRANSLATION에서 전환")
         fun `TRANSLATION에서 SETTLEMENT로 전환하면 200을 반환한다`() {
             // given - TRANSLATION 상태로 설정
             val newAdminInfo = helper.setupScenarioWithAdmin(SystemPhase.TRANSLATION)
@@ -287,6 +300,7 @@ class SystemPhaseTest(
         }
 
         @Test
+        @DisplayName("POST /system-phase/transit/settlement - 잘못된 페이즈에서 전환 시도")
         fun `잘못된 페이즈에서 SETTLEMENT로 전환하면 400을 반환한다`() {
             // given - RECRUITMENT 상태 (잘못된 시작 페이즈)
 
@@ -305,6 +319,7 @@ class SystemPhaseTest(
     inner class TransitToDeactivation {
 
         @Test
+        @DisplayName("POST /system-phase/transit/deactivation - SETTLEMENT에서 전환")
         fun `SETTLEMENT에서 DEACTIVATION으로 전환하면 200을 반환한다`() {
             // given - SETTLEMENT 상태로 설정
             val newAdminInfo = helper.setupScenarioWithAdmin(SystemPhase.SETTLEMENT)
@@ -323,6 +338,7 @@ class SystemPhaseTest(
         }
 
         @Test
+        @DisplayName("POST /system-phase/transit/deactivation - 잘못된 페이즈에서 전환 시도")
         fun `잘못된 페이즈에서 DEACTIVATION으로 전환하면 400을 반환한다`() {
             // given - RECRUITMENT 상태 (잘못된 시작 페이즈)
             val request = mapOf("userRetentionMode" to "KEEP_ALL")
@@ -338,6 +354,7 @@ class SystemPhaseTest(
         }
 
         @Test
+        @DisplayName("POST /system-phase/transit/deactivation - KEEP_ADMINS 모드로 전환")
         fun `KEEP_ADMINS 모드로 전환하면 200을 반환한다`() {
             // given - SETTLEMENT 상태로 설정
             val newAdminInfo = helper.setupScenarioWithAdmin(SystemPhase.SETTLEMENT)
@@ -355,6 +372,7 @@ class SystemPhaseTest(
         }
 
         @Test
+        @DisplayName("POST /system-phase/transit/deactivation - KEEP_SELF 모드로 전환")
         fun `KEEP_SELF 모드로 전환하면 200을 반환한다`() {
             // given - SETTLEMENT 상태로 설정
             val newAdminInfo = helper.setupScenarioWithAdmin(SystemPhase.SETTLEMENT)
@@ -372,6 +390,7 @@ class SystemPhaseTest(
         }
 
         @Test
+        @DisplayName("POST /system-phase/transit/deactivation - KEEP_ALL 모드로 전환 시 모든 사용자 유지")
         fun `KEEP_ALL 모드로 전환하면 모든 사용자가 유지된다`() {
             // given - SETTLEMENT 상태로 설정
             val newAdminInfo = helper.setupScenarioWithAdmin(SystemPhase.SETTLEMENT)
@@ -403,6 +422,7 @@ class SystemPhaseTest(
         }
 
         @Test
+        @DisplayName("POST /system-phase/transit/deactivation - KEEP_ADMINS 모드로 전환 시 학생만 삭제")
         fun `KEEP_ADMINS 모드로 전환하면 학생만 삭제되고 관리자는 유지된다`() {
             // given - SETTLEMENT 상태로 설정
             val newAdminInfo = helper.setupScenarioWithAdmin(SystemPhase.SETTLEMENT)
@@ -435,6 +455,7 @@ class SystemPhaseTest(
         }
 
         @Test
+        @DisplayName("POST /system-phase/transit/deactivation - KEEP_SELF 모드로 전환 시 요청자만 유지")
         fun `KEEP_SELF 모드로 전환하면 요청한 관리자만 유지된다`() {
             // given - SETTLEMENT 상태로 설정
             val newAdminInfo = helper.setupScenarioWithAdmin(SystemPhase.SETTLEMENT)
@@ -472,6 +493,7 @@ class SystemPhaseTest(
     open inner class FullPhaseCycle {
 
         @Test
+        @DisplayName("POST /system-phase/transit/* - 전체 페이즈 사이클 순차 전환")
         @Transactional
         open fun `전체 페이즈 사이클을 순차적으로 전환할 수 있다`() {
             // given - DEACTIVATION 상태에서 시작

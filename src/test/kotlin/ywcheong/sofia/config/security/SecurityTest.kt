@@ -181,7 +181,7 @@ class SecurityTest(
     inner class AuthorizationHeaderTests {
 
         @Test
-        @DisplayName("지원되지 않는 인증 유형은 401 반환")
+        @DisplayName("GET /test/security/public - 지원되지 않는 인증 유형으로 401 반환")
         fun `지원되지 않는 인증 유형은 401 반환`() {
             mockMvc.get("/test/security/public") {
                 header("Authorization", "bearer some-token")
@@ -191,7 +191,7 @@ class SecurityTest(
         }
 
         @Test
-        @DisplayName("User 토큰 앞의 공백은 무시됨")
+        @DisplayName("GET /test/security/user - User 토큰 앞의 공백 무시")
         fun `User 토큰 앞의 공백은 무시됨`() {
             // given
             val studentInfo = helper.createStudentAndGetToken("25-003", "테스트")

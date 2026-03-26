@@ -39,6 +39,7 @@ class GlossaryTest(
     inner class SearchGlossary {
 
         @Test
+        @DisplayName("GET /glossary - 전체 사전 항목 조회")
         fun `키워드 없이 전체 사전을 조회하면 모든 항목이 반환된다`() {
             // given: 사전에 2개의 항목이 등록되어 있음
             helper.createGlossaryEntry(koreanTerm = "번역", englishTerm = "Translation")
@@ -55,6 +56,7 @@ class GlossaryTest(
         }
 
         @Test
+        @DisplayName("GET /glossary - 한국어 키워드로 사전 검색")
         fun `한국어 키워드로 검색하면 매칭되는 항목만 반환된다`() {
             // given: 사전에 항목들이 등록되어 있음
             helper.createGlossaryEntry(koreanTerm = "번역", englishTerm = "Translation")
@@ -71,6 +73,7 @@ class GlossaryTest(
         }
 
         @Test
+        @DisplayName("GET /glossary - 영어 키워드 검색 불가 확인")
         fun `영어 키워드로 검색해도 항목은 매칭하지 않는다`() {
             // given
             helper.createGlossaryEntry(koreanTerm = "번역", englishTerm = "Translation")
@@ -85,6 +88,7 @@ class GlossaryTest(
         }
 
         @Test
+        @DisplayName("GET /glossary - 검색 결과 없음 시 빈 배열 반환")
         fun `매칭되는 항목이 없으면 빈 배열을 반환한다`() {
             // given: 사전에 항목이 있음
             helper.createGlossaryEntry(koreanTerm = "번역", englishTerm = "Translation")
@@ -98,6 +102,7 @@ class GlossaryTest(
         }
 
         @Test
+        @DisplayName("GET /glossary - 빈 사전 조회 시 빈 배열 반환")
         fun `사전이 비어있으면 빈 배열을 반환한다`() {
             // when & then: 빈 사전 조회
             mockMvc.get("/glossary")
@@ -113,6 +118,7 @@ class GlossaryTest(
     inner class AddGlossaryEntry {
 
         @Test
+        @DisplayName("POST /glossary - 새 사전 항목 추가")
         fun `새로운 사전 항목을 추가하면 200과 함께 항목이 반환된다`() {
             // given: 추가할 항목
             val request = mapOf(
@@ -134,6 +140,7 @@ class GlossaryTest(
         }
 
         @Test
+        @DisplayName("POST /glossary - 한국어 용어 길이 초과 시 400 반환")
         fun `한국어 용어가 200자를 초과하면 400을 반환한다`() {
             // given: 200자 초과 한국어 용어
             val request = mapOf(
@@ -152,6 +159,7 @@ class GlossaryTest(
         }
 
         @Test
+        @DisplayName("POST /glossary - 영어 용어 길이 초과 시 400 반환")
         fun `영어 용어가 200자를 초과하면 400을 반환한다`() {
             // given: 200자 초과 영어 용어
             val request = mapOf(
@@ -175,6 +183,7 @@ class GlossaryTest(
     inner class UpdateGlossaryEntry {
 
         @Test
+        @DisplayName("PUT /glossary/{id} - 사전 항목 수정")
         fun `기존 사전 항목을 수정하면 변경된 내용이 반환된다`() {
             // given: 기존 항목
             val entry = helper.createGlossaryEntry(koreanTerm = "번역", englishTerm = "Translation")
@@ -197,6 +206,7 @@ class GlossaryTest(
         }
 
         @Test
+        @DisplayName("PUT /glossary/{id} - 존재하지 않는 항목 수정 시 400 반환")
         fun `존재하지 않는 항목을 수정하면 400을 반환한다`() {
             // given: 존재하지 않는 ID
             val request = mapOf(
@@ -220,6 +230,7 @@ class GlossaryTest(
     inner class DeleteGlossaryEntry {
 
         @Test
+        @DisplayName("DELETE /glossary/{id} - 사전 항목 삭제")
         fun `사전 항목을 삭제하면 200을 반환한다`() {
             // given: 기존 항목
             val entry = helper.createGlossaryEntry(koreanTerm = "번역", englishTerm = "Translation")
@@ -233,6 +244,7 @@ class GlossaryTest(
         }
 
         @Test
+        @DisplayName("DELETE /glossary/{id} - 존재하지 않는 항목 삭제 시 400 반환")
         fun `존재하지 않는 항목을 삭제하면 400을 반환한다`() {
             // when & then: 존재하지 않는 ID로 삭제 시도
             mockMvc.delete("/glossary/00000000-0000-0000-0000-000000000000") {
@@ -248,6 +260,7 @@ class GlossaryTest(
     inner class AutoMapGlossary {
 
         @Test
+        @DisplayName("POST /glossary/auto-map - 텍스트 내 한국어 용어 자동 매핑")
         fun `텍스트에 포함된 한국어 용어들이 자동 매핑된다`() {
             // given: 사전에 항목들이 등록되어 있음
             helper.createGlossaryEntry(koreanTerm = "번역", englishTerm = "Translation")
@@ -269,6 +282,7 @@ class GlossaryTest(
         }
 
         @Test
+        @DisplayName("POST /glossary/auto-map - 매칭 용어 없음 시 빈 배열 반환")
         fun `매칭되는 용어가 없으면 빈 배열을 반환한다`() {
             // given: 사전에 항목이 있지만 텍스트에는 포함되지 않음
             helper.createGlossaryEntry(koreanTerm = "번역", englishTerm = "Translation")
@@ -288,6 +302,7 @@ class GlossaryTest(
         }
 
         @Test
+        @DisplayName("POST /glossary/auto-map - 공백 차이 허용 매핑")
         fun `공백이 다른 용어도 매핑된다`() {
             // given: "우리 학교"로 등록된 항목
             helper.createGlossaryEntry(koreanTerm = "우리 학교", englishTerm = "Our School")
@@ -310,6 +325,7 @@ class GlossaryTest(
         }
 
         @Test
+        @DisplayName("POST /glossary/auto-map - 텍스트 공백 허용 매핑")
         fun `텍스트에 공백이 있어도 매핑된다`() {
             // given: "우리학교"로 등록된 항목
             helper.createGlossaryEntry(koreanTerm = "우리학교", englishTerm = "Our School")
@@ -331,6 +347,7 @@ class GlossaryTest(
         }
 
         @Test
+        @DisplayName("POST /glossary/auto-map - 대소문자 무시 매핑")
         fun `대소문자가 달라도 매핑된다`() {
             // given: 영문이 섞인 용어
             helper.createGlossaryEntry(koreanTerm = "API 서버", englishTerm = "API Server")
