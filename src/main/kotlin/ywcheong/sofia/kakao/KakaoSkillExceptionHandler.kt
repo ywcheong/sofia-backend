@@ -21,7 +21,7 @@ class KakaoSkillExceptionHandler {
     @ExceptionHandler(KakaoSkillException::class)
     fun handleKakaoSkillException(ex: KakaoSkillException): KakaoSkillController.SkillResponse {
         when (val cause = ex.cause) {
-            is BusinessException -> logger.error(cause) { "Kakao Skill 비즈니스 오류: ${cause.message}" }
+            is BusinessException -> logger.warn { "Kakao Skill 비즈니스 오류: ${cause.message}" }
             else -> logger.error(cause) { "Kakao Skill 장애 발생: ${cause?.message}" }
         }
 
