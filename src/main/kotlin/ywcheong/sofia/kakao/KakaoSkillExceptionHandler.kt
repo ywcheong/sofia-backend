@@ -6,6 +6,7 @@ import org.springframework.core.Ordered
 import org.springframework.core.annotation.Order
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
+import ywcheong.sofia.commons.BusinessException
 
 /**
  * Kakao Skill 관련 예외를 처리하여 SkillResponse 형식으로 변환합니다.
@@ -18,10 +19,9 @@ class KakaoSkillExceptionHandler {
 
     @ExceptionHandler(KakaoSkillException::class)
     fun handleKakaoSkillException(ex: KakaoSkillException): KakaoSkillController.SkillResponse {
-        val cause = ex.cause
-        if (cause != null) {
-            // 원인 예외가 있으면 로깅
-            logger.error(cause) { "Kakao Skill 오류: ${cause.message}" }
+        when (val cause = ex.cause) {
+            is BusinessException -> logger.error(cause) { "Kakao Skill 비즈니스 오류: ${cause.message}" }
+            else -> logger.error(cause) { "Kakao Skill 장애 발생: ${cause?.message}" }
         }
 
         return KakaoSkillController.SkillResponse.simpleText(ex.userMessage)
