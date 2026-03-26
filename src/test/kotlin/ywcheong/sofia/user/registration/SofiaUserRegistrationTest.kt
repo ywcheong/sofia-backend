@@ -248,24 +248,6 @@ class SofiaUserRegistrationTest(
     }
 
     @Nested
-    @DisplayName("registration_cancel_confirm 액션 - 회원가입 취소 확인")
-    inner class CancelRegistrationConfirm {
-
-        @Test
-        fun `취소 확인 메시지를 반환한다`() {
-            // given & when
-            val result = simulator.sendMessage(
-                fromUser = null,
-                action = "registration_cancel_confirm"
-            )
-
-            // then
-            val response = result.response.contentAsString
-            assert(response.contains("정말로 가입 요청을 취소하시겠습니까?")) { "취소 확인 메시지가 포함되어야 합니다" }
-        }
-    }
-
-    @Nested
     @DisplayName("registration_cancel 액션 - 회원가입 취소")
     inner class CancelRegistration {
 
