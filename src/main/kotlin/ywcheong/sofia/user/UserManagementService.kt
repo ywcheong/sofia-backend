@@ -120,6 +120,17 @@ class UserManagementService(
         }
     }
 
+    data class AdjustWarningCountCommand(
+        val userId: UUID,
+        val amount: Int,
+    ) {
+        init {
+            if (amount == 0) {
+                throw BusinessException("부여하는 경고 수는 0일 수 없습니다.")
+            }
+        }
+    }
+
     @Transactional
     fun setRestStatus(command: SetRestStatusCommand): SofiaUser {
         val userTask = sofiaUserTaskStatusRepository.findByIdOrNull(command.userId)
@@ -153,6 +164,23 @@ class UserManagementService(
 
         val action = if (command.amount > 0) "부여" else "차감"
         logger.info { "보정 자수 $action: userId=${command.userId}, amount=${command.amount}, newAdjustedCharCount=${userTask.adjustedCharCount}" }
+
+        return userTask.user
+    }
+
+    @Transactional
+    fun adjustWarningCount(command: AdjustWarningCountCommand): SofiaUser {
+        val userTask = sofiaUserTaskStatusRepository.findByIdOrNull(command.userId)
+            ?: throw BusinessException("존재하지 않는 사용자입니다.")
+
+        try {
+            userTask.adjustWarningCount(command.amount)
+        } catch (ex: IllegalArgumentException) {
+            throw BusinessException("경고 개수는 음수가 될 수 없습니다.", ex)
+        }
+
+        val action = if (command.amount > 0) "부여" else "차감"
+        logger.info { "경고 $action: userId=${command.userId}, amount=${command.amount}, newWarningCount=${userTask.warningCount}" }
 
         return userTask.user
     }

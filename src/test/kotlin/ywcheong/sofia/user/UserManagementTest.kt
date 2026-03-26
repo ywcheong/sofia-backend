@@ -818,6 +818,113 @@ class UserManagementTest(
     }
 
     @Nested
+    @DisplayName("POST /users/{userId}/adjust-warning-count - 경고 수 조정")
+    inner class AdjustWarningCount {
+
+        @Test
+        fun `양수로 경고를 부여하면 200을 반환한다`() {
+            // given - 활성 사용자 생성
+            val user = helper.createActiveStudent("25-043", "사용자")
+
+            val request = mapOf(
+                "amount" to 1,
+            )
+
+            // when & then (관리자 권한 필요)
+            mockMvc.post("/users/${user.id}/adjust-warning-count") {
+                contentType = MediaType.APPLICATION_JSON
+                content = objectMapper.writeValueAsString(request)
+                header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.userId") { value(user.id.toString()) }
+                jsonPath("$.amount") { value(1) }
+                jsonPath("$.warningCount") { value(1) }
+            }
+        }
+
+        @Test
+        fun `음수로 경고를 차감하면 200을 반환한다`() {
+            // given - 경고가 있는 사용자 생성
+            val user = helper.createActiveStudent("25-044", "사용자")
+            adjustWarningCount(user.id, 2) // 먼저 2 부여
+
+            val request = mapOf(
+                "amount" to -1,
+            )
+
+            // when & then
+            mockMvc.post("/users/${user.id}/adjust-warning-count") {
+                contentType = MediaType.APPLICATION_JSON
+                content = objectMapper.writeValueAsString(request)
+                header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.userId") { value(user.id.toString()) }
+                jsonPath("$.amount") { value(-1) }
+                jsonPath("$.warningCount") { value(1) }
+            }
+        }
+
+        @Test
+        fun `경고 총 갯수가 음수가 된다면 400을 반환한다`() {
+            // given - 경고가 있는 사용자 생성
+            val user = helper.createActiveStudent("25-044", "사용자")
+            adjustWarningCount(user.id, 1)
+
+            val request = mapOf(
+                "amount" to -2,
+            )
+
+            // when & then
+            mockMvc.post("/users/${user.id}/adjust-warning-count") {
+                contentType = MediaType.APPLICATION_JSON
+                content = objectMapper.writeValueAsString(request)
+                header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+            }.andExpect {
+                status { isBadRequest() }
+            }
+        }
+
+        @Test
+        fun `존재하지 않는 사용자면 400을 반환한다`() {
+            // given
+            val nonExistentId = UUID.randomUUID()
+            val request = mapOf(
+                "amount" to 1,
+            )
+
+            // when & then
+            mockMvc.post("/users/$nonExistentId/adjust-warning-count") {
+                contentType = MediaType.APPLICATION_JSON
+                content = objectMapper.writeValueAsString(request)
+                header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+            }.andExpect {
+                status { isBadRequest() }
+            }
+        }
+
+        @Test
+        fun `경고 수가 0이면 400을 반환한다`() {
+            // given - 활성 사용자 생성
+            val user = helper.createActiveStudent("25-045", "사용자")
+
+            val request = mapOf(
+                "amount" to 0,
+            )
+
+            // when & then
+            mockMvc.post("/users/${user.id}/adjust-warning-count") {
+                contentType = MediaType.APPLICATION_JSON
+                content = objectMapper.writeValueAsString(request)
+                header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+            }.andExpect {
+                status { isBadRequest() }
+            }
+        }
+    }
+
+    @Nested
     @DisplayName("POST /users/{userId}/promote - 관리자 승급")
     inner class PromoteToAdmin {
 
@@ -1021,6 +1128,20 @@ class UserManagementTest(
             "amount" to amount,
         )
         mockMvc.post("/users/$userId/adjust-char-count") {
+            contentType = MediaType.APPLICATION_JSON
+            content = objectMapper.writeValueAsString(request)
+            header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))
+        }.andExpect {
+            status { isOk() }
+        }
+    }
+
+    // 헬퍼 메서드: 경고 수 조정 (API 사용)
+    private fun adjustWarningCount(userId: UUID, amount: Int) {
+        val request = mapOf(
+            "amount" to amount,
+        )
+        mockMvc.post("/users/$userId/adjust-warning-count") {
             contentType = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(request)
             header("Authorization", helper.adminAuthHeader(adminInfo.secretToken))

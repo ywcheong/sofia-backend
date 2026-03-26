@@ -161,6 +161,43 @@ class UserManagementController(
         )
     }
 
+    // 경고 수 부여/차감
+    data class AdjustWarningCountRequest(
+        val amount: Int,
+    )
+
+    data class AdjustWarningCountResponse(
+        val userId: UUID,
+        val amount: Int,
+        val warningCount: Int,
+    )
+
+    @AvailableCondition(
+        phases = [SystemPhase.RECRUITMENT, SystemPhase.TRANSLATION, SystemPhase.SETTLEMENT],
+        permissions = [SofiaPermission.ADMIN_LEVEL]
+    )
+    @PostMapping("/{userId}/adjust-warning-count")
+    @Operation(summary = "경고 수 조정", description = "amount 양수면 부여, 음수면 차감")
+    fun adjustWarningCount(
+        @PathVariable userId: UUID,
+        @RequestBody request: AdjustWarningCountRequest,
+    ): AdjustWarningCountResponse {
+        logger.info { "경고 수 조정 요청: userId=$userId, amount=${request.amount}" }
+
+        val command = UserManagementService.AdjustWarningCountCommand(
+            userId = userId,
+            amount = request.amount,
+        )
+
+        val user = userManagementService.adjustWarningCount(command)
+
+        return AdjustWarningCountResponse(
+            userId = user.id,
+            amount = request.amount,
+            warningCount = user.taskStatus.warningCount,
+        )
+    }
+
     // UC-014: 관리자 승급
     data class PromoteToAdminResponse(
         val userId: UUID,

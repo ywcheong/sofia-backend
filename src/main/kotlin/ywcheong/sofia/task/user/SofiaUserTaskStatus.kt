@@ -6,6 +6,7 @@ import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.MapsId
 import jakarta.persistence.OneToOne
+import ywcheong.sofia.commons.BusinessException
 import ywcheong.sofia.user.SofiaUser
 import java.time.Instant
 import java.util.*
@@ -49,5 +50,10 @@ class SofiaUserTaskStatus(
 
     fun adjustCharCount(amount: Int) {
         this.adjustedCharCount += amount
+    }
+
+    fun adjustWarningCount(amount: Int) {
+        this.warningCount += amount
+        if (this.warningCount < 0) throw IllegalArgumentException("경고 개수는 음수가 될 수 없습니다.")
     }
 }
