@@ -20,7 +20,7 @@ class TranslationTask(
     @Enumerated(EnumType.STRING)
     val taskType: TaskType,
 
-    @Column(length = 50)
+    @Column(length = 50, unique = true)
     val taskDescription: String,
 
     @ManyToOne(fetch = FetchType.LAZY)

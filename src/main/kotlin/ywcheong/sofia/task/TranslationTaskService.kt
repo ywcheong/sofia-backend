@@ -166,7 +166,7 @@ class TranslationTaskService(
     @Transactional
     fun createTask(command: CreateTaskCommand): TranslationTask {
         // BR-006: Work ID 중복 확인
-        if (translationTaskRepository.existsByTaskTypeAndTaskDescription(command.taskType, command.taskDescription)) {
+        if (translationTaskRepository.existsByTaskDescription(command.taskDescription)) {
             throw BusinessException("이미 존재하는 과제입니다.")
         }
 

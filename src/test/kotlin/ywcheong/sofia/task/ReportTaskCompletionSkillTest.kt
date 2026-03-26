@@ -12,7 +12,6 @@ import tools.jackson.databind.ObjectMapper
 import ywcheong.sofia.config.TestScenarioHelper
 import ywcheong.sofia.kakao.FakeKakaoMessageSimulator
 import ywcheong.sofia.phase.SystemPhase
-import java.util.*
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -54,7 +53,7 @@ class ReportTaskCompletionSkillTest(
                 fromUser = user,
                 action = "reportwork",
                 actionData = mapOf(
-                    "taskId" to task.id.toString(),
+                    "taskDescription" to task.taskDescription,
                     "characterCount" to "1500"
                 )
             )
@@ -80,7 +79,7 @@ class ReportTaskCompletionSkillTest(
                 fromUser = user,
                 action = "reportwork",
                 actionData = mapOf(
-                    "taskId" to task.id.toString(),
+                    "taskDescription" to task.taskDescription,
                     "characterCount" to "2000자"
                 )
             )
@@ -106,7 +105,7 @@ class ReportTaskCompletionSkillTest(
                 fromUser = user,
                 action = "reportwork",
                 actionData = mapOf(
-                    "taskId" to task.id.toString(),
+                    "taskDescription" to task.taskDescription,
                     "characterCount" to " 3000 자 "
                 )
             )
@@ -140,7 +139,7 @@ class ReportTaskCompletionSkillTest(
                 fromUser = user,
                 action = "reportwork",
                 actionData = mapOf(
-                    "taskId" to task.id.toString(),
+                    "taskDescription" to task.taskDescription,
                     "characterCount" to "1000"
                 )
             )
@@ -158,17 +157,16 @@ class ReportTaskCompletionSkillTest(
     inner class ErrorCases {
 
         @Test
-        fun `존재하지 않는 과제 ID면 에러 메시지를 반환한다`() {
-            // given: 활성 학생과 존재하지 않는 과제 ID
+        fun `다른 사용자의 과제명이면 에러 메시지를 반환한다`() {
+            // given: 활성 학생
             val user = helper.createActiveStudent("25-020", "사용자")
-            val nonExistentTaskId = UUID.randomUUID()
 
-            // when: 존재하지 않는 과제로 완료 보고
+            // when: 존재하지 않는 과제명으로 완료 보고
             val result = simulator.sendMessage(
                 fromUser = user,
                 action = "reportwork",
                 actionData = mapOf(
-                    "taskId" to nonExistentTaskId.toString(),
+                    "taskDescription" to "존재하지 않는 과제명입니다",
                     "characterCount" to "1000"
                 )
             )
@@ -193,7 +191,7 @@ class ReportTaskCompletionSkillTest(
                 fromUser = user,
                 action = "reportwork",
                 actionData = mapOf(
-                    "taskId" to task.id.toString(),
+                    "taskDescription" to task.taskDescription,
                     "characterCount" to "1000"
                 )
             )
@@ -203,7 +201,7 @@ class ReportTaskCompletionSkillTest(
                 fromUser = user,
                 action = "reportwork",
                 actionData = mapOf(
-                    "taskId" to task.id.toString(),
+                    "taskDescription" to task.taskDescription,
                     "characterCount" to "2000"
                 )
             )
@@ -228,7 +226,7 @@ class ReportTaskCompletionSkillTest(
                 fromUser = user,
                 action = "reportwork",
                 actionData = mapOf(
-                    "taskId" to task.id.toString(),
+                    "taskDescription" to task.taskDescription,
                     "characterCount" to "-100"
                 )
             )
@@ -253,7 +251,7 @@ class ReportTaskCompletionSkillTest(
                 fromUser = user,
                 action = "reportwork",
                 actionData = mapOf(
-                    "taskId" to task.id.toString(),
+                    "taskDescription" to task.taskDescription,
                     "characterCount" to "천오백"
                 )
             )
@@ -264,23 +262,23 @@ class ReportTaskCompletionSkillTest(
         }
 
         @Test
-        fun `과제 ID 형식이 올바르지 않으면 에러 메시지를 반환한다`() {
+        fun `존재하지 않는 과제명이면 에러 메시지를 반환한다`() {
             // given: 활성 학생
-            val user = helper.createActiveStudent("25-024", "잘못된ID사용자")
+            val user = helper.createActiveStudent("25-024", "잘못된과제사용자")
 
-            // when: 잘못된 형식의 과제 ID로 완료 보고
+            // when: 존재하지 않는 과제명으로 완료 보고
             val result = simulator.sendMessage(
                 fromUser = user,
                 action = "reportwork",
                 actionData = mapOf(
-                    "taskId" to "invalid-uuid-format",
+                    "taskDescription" to "존재하지 않는 과제명입니다",
                     "characterCount" to "1000"
                 )
             )
 
             // then: 에러 메시지 반환
             val response = result.response.contentAsString
-            assert(response.contains("과제 ID 형식")) { "과제 ID 형식 에러 메시지가 포함되어야 합니다" }
+            assert(response.contains("존재하지 않는 과제")) { "존재하지 않는 과제 에러 메시지가 포함되어야 합니다" }
         }
 
         @Test
@@ -298,7 +296,7 @@ class ReportTaskCompletionSkillTest(
                 fromUser = null,
                 action = "reportwork",
                 actionData = mapOf(
-                    "taskId" to task.id.toString(),
+                    "taskDescription" to task.taskDescription,
                     "characterCount" to "1000"
                 )
             )

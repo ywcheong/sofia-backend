@@ -9,7 +9,9 @@ import java.util.UUID
 
 @Repository
 interface TranslationTaskRepository : JpaRepository<TranslationTask, UUID>, JpaSpecificationExecutor<TranslationTask> {
-    fun existsByTaskTypeAndTaskDescription(taskType: TranslationTask.TaskType, taskDescription: String): Boolean
+    fun existsByTaskDescription(taskDescription: String): Boolean
+
+    fun findByTaskDescription(taskDescription: String): TranslationTask?
 
     fun findByAssigneeAndCompletedAtIsNotNull(assignee: ywcheong.sofia.user.SofiaUser): List<TranslationTask>
 

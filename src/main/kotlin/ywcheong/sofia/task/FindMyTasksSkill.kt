@@ -66,7 +66,7 @@ class FindMyTasksSkill(
                     ""
                 }
 
-                appendLine("- ${task.taskDescription} ($taskTypeText, $elapsedTimeText)$lateWarning")
+                appendLine("- <${task.taskDescription}> ($taskTypeText, $elapsedTimeText)$lateWarning")
             }
         }
 

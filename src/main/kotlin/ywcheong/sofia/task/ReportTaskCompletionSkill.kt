@@ -7,7 +7,6 @@ import ywcheong.sofia.kakao.KakaoSkill
 import ywcheong.sofia.phase.SystemPhase
 import ywcheong.sofia.task.user.SofiaUserTaskStatusRepository
 import ywcheong.sofia.user.SofiaUser
-import java.util.*
 
 @Service
 class ReportTaskCompletionSkill(
@@ -20,7 +19,7 @@ class ReportTaskCompletionSkill(
     allowedPhases = listOf(SystemPhase.TRANSLATION),
 ) {
     data class ActionData(
-        val taskId: String,
+        val taskDescription: String,
         val characterCount: String,
     )
 
@@ -40,16 +39,17 @@ class ReportTaskCompletionSkill(
             throw BusinessException("글자 수는 0 이상이어야 합니다.")
         }
 
-        // 3. taskId UUID 변환
-        val taskId = parseTaskId(params.taskId) ?: throw BusinessException("과제 ID 형식이 올바르지 않습니다.")
+        // 3. 과제 조회
+        val task = translationTaskRepository.findByTaskDescription(params.taskDescription)
+            ?: throw BusinessException("존재하지 않는 과제입니다.")
 
         // 4. 과제 완료 보고
         val command = TranslationTaskService.ReportCompletionCommand(
-            taskId = taskId,
+            taskId = task.id,
             characterCount = characterCount,
         )
-        val task = translationTaskService.reportCompletion(command)
-        val isLate = translationTaskService.isLate(task)
+        val updatedTask = translationTaskService.reportCompletion(command)
+        val isLate = translationTaskService.isLate(updatedTask)
 
         // 5. 총 글자수 및 경고수 조회
         val taskCharCount = translationTaskRepository.sumCharacterCountByAssignee(user)
@@ -71,14 +71,6 @@ class ReportTaskCompletionSkill(
         // "자" 접미사 제거
         val trimmed = input.trim().removeSuffix("자").trim()
         return trimmed.toIntOrNull()
-    }
-
-    private fun parseTaskId(input: String): UUID? {
-        return try {
-            UUID.fromString(input.trim())
-        } catch (e: IllegalArgumentException) {
-            null
-        }
     }
 
     private fun buildResultMessage(isLate: Boolean, totalCharCount: Int, warningCount: Int): String {
