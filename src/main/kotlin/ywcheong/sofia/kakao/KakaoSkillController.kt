@@ -76,16 +76,6 @@ class KakaoSkillController(
             val action: String = "message",
             val messageText: String,
         )
-
-        companion object {
-            fun simpleText(message: String): SkillResponse {
-                return SkillResponse(
-                    template = Template(
-                        outputs = listOf(Output(simpleText = Output.SimpleText(text = message)))
-                    )
-                )
-            }
-        }
     }
 
     @PostMapping
