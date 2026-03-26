@@ -28,7 +28,7 @@ class RegistrationApplySkill(
             return KakaoSkillResult(
                 message = "이미 가입을 요청했거나, 또는 이미 가입된 상태입니다.",
                 quickReplies = listOf(
-                    KakaoSkillResult.QuickReply(label = "홈 메뉴", messageText = "home"),
+                    KakaoSkillResult.QuickReply(label = "홈 메뉴", messageText = "홈 메뉴"),
                 ),
             )
         }
@@ -48,8 +48,8 @@ class RegistrationApplySkill(
                 이름: ${params.studentName}
             """.trimIndent(),
             quickReplies = listOf(
-                KakaoSkillResult.QuickReply(label = "홈 메뉴", messageText = "home"),
-                KakaoSkillResult.QuickReply(label = "가입요청 취소하기", messageText = "registration_cancel_confirm"),
+                KakaoSkillResult.QuickReply(label = "홈 메뉴", messageText = "홈 메뉴"),
+                KakaoSkillResult.QuickReply(label = "가입요청 취소하기", messageText = "가입취소"),
             ),
         )
     }

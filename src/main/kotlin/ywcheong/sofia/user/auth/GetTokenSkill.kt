@@ -36,8 +36,8 @@ class GetTokenSkill : KakaoSkill<GetTokenSkill.NoParams>(
             message = message,
             quickReplies = listOf(
                 KakaoSkillResult.QuickReply(label = "홈 메뉴", messageText = "홈 메뉴"),
-                KakaoSkillResult.QuickReply(label = "토큰 도움말 보기", messageText = "토큰 도움말"),
-                KakaoSkillResult.QuickReply(label = "토큰 재발급하기", messageText = "retoken"),
+                KakaoSkillResult.QuickReply(label = "토큰 도움말 보기", messageText = "토큰설명"),
+                KakaoSkillResult.QuickReply(label = "토큰 재발급하기", messageText = "토큰재발급"),
             ),
         )
     }

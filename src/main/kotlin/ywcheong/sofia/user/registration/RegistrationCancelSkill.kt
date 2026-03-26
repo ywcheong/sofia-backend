@@ -27,7 +27,7 @@ class RegistrationCancelSkill(
             return KakaoSkillResult(
                 message = "네, 알겠습니다. 가입 요청을 철회하지 않겠습니다.",
                 quickReplies = listOf(
-                    KakaoSkillResult.QuickReply(label = "홈 메뉴", messageText = "home"),
+                    KakaoSkillResult.QuickReply(label = "홈 메뉴", messageText = "홈 메뉴"),
                 ),
             )
         }
@@ -37,8 +37,8 @@ class RegistrationCancelSkill(
         return KakaoSkillResult(
             message = "요청이 삭제되었습니다.",
             quickReplies = listOf(
-                KakaoSkillResult.QuickReply(label = "홈 메뉴", messageText = "home"),
-                KakaoSkillResult.QuickReply(label = "가입 요청하기", messageText = "registration_apply"),
+                KakaoSkillResult.QuickReply(label = "홈 메뉴", messageText = "홈 메뉴"),
+                KakaoSkillResult.QuickReply(label = "가입 요청하기", messageText = "가입요청"),
             ),
         )
     }

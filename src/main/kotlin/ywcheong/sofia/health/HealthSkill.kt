@@ -21,7 +21,7 @@ class HealthSkill : KakaoSkill<HealthSkill.NoParams>(
             message = "ok",
             quickReplies = listOf(
                 KakaoSkillResult.QuickReply(label = "재시도", messageText = "healthcheck"),
-                KakaoSkillResult.QuickReply(label = "홈으로", messageText = "home"),
+                KakaoSkillResult.QuickReply(label = "홈으로", messageText = "홈 메뉴"),
             ),
         )
     }

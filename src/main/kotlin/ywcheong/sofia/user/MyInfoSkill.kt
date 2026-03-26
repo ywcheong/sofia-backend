@@ -30,8 +30,8 @@ class MyInfoSkill(
             return KakaoSkillResult(
                 message = "현재 귀하의 가입 요청이 심사 중입니다. 승인되면 번역버디라는 안내가 추가됩니다. 거부되면 가입 요청이 자동으로 삭제됩니다.",
                 quickReplies = listOf(
-                    KakaoSkillResult.QuickReply(label = "가입요청 취소하기", messageText = "cancel_registration"),
-                    KakaoSkillResult.QuickReply(label = "홈 메뉴", messageText = "home"),
+                    KakaoSkillResult.QuickReply(label = "가입요청 취소하기", messageText = "가입취소"),
+                    KakaoSkillResult.QuickReply(label = "홈 메뉴", messageText = "홈 메뉴"),
                 ),
             )
         }
@@ -40,8 +40,8 @@ class MyInfoSkill(
         return KakaoSkillResult(
             message = "현재 가입 요청을 하지 않았습니다.",
             quickReplies = listOf(
-                KakaoSkillResult.QuickReply(label = "가입 요청하기", messageText = "register"),
-                KakaoSkillResult.QuickReply(label = "홈 메뉴", messageText = "home"),
+                KakaoSkillResult.QuickReply(label = "가입 요청하기", messageText = "가입요청"),
+                KakaoSkillResult.QuickReply(label = "홈 메뉴", messageText = "홈 메뉴"),
             ),
         )
     }
@@ -61,8 +61,8 @@ class MyInfoSkill(
         return KakaoSkillResult(
             message = message,
             quickReplies = listOf(
-                KakaoSkillResult.QuickReply(label = "홈 메뉴", messageText = "home"),
-                KakaoSkillResult.QuickReply(label = "토큰 조회하기", messageText = "token"),
+                KakaoSkillResult.QuickReply(label = "홈 메뉴", messageText = "홈 메뉴"),
+                KakaoSkillResult.QuickReply(label = "토큰 조회하기", messageText = "토큰조회"),
             ),
         )
     }
