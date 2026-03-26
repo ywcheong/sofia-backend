@@ -361,4 +361,112 @@ class TestScenarioHelper(
      */
     fun findAllIncompleteTasks(): List<TranslationTask> =
         translationTaskRepository.findAllIncompleteTasks()
+
+    // ==================== 시나리오별 설정 메서드 ====================
+
+    /**
+     * RECRUITMENT 페이즈 시나리오를 설정합니다.
+     * - DB 초기화
+     * - RECRUITMENT 페이즈 설정
+     * - 관리자 계정 생성 (휴식 상태)
+     */
+    fun setupRecruitmentScenario(): AdminAuthInfo {
+        clearAll()
+        setPhase(SystemPhase.RECRUITMENT)
+        val admin = createAdminAndGetToken()
+        setUserResting(admin.userId, true)
+        return admin
+    }
+
+    /**
+     * TRANSLATION 페이즈 시나리오를 설정합니다.
+     * - DB 초기화
+     * - TRANSLATION 페이즈 설정
+     * - 관리자 계정 생성 (휴식 상태)
+     */
+    fun setupTranslationScenario(): AdminAuthInfo {
+        clearAll()
+        setPhase(SystemPhase.TRANSLATION)
+        val admin = createAdminAndGetToken()
+        setUserResting(admin.userId, true)
+        return admin
+    }
+
+    // ==================== 복합 데이터 생성 메서드 ====================
+
+    /**
+     * 지각 과제를 생성합니다.
+     * assignedAt을 현재 시간보다 [hoursLate]시간 과거로 설정하여,
+     * 이미 할당된 지 오래된 과제 시나리오를 만듭니다.
+     *
+     * @param studentNumber 학번
+     * @param description 과제 설명
+     * @param hoursLate 늦은 시간 (시간 단위)
+     * @return 생성된 지각 과제
+     */
+    fun createLateTask(
+        studentNumber: String,
+        description: String,
+        hoursLate: Long
+    ): TranslationTask {
+        val student = createActiveStudent(studentNumber, "학생-$studentNumber")
+        val assignedAt = java.time.Instant.now().minusSeconds(hoursLate * 3600)
+        return translationTaskRepository.save(
+            TranslationTask(
+                taskType = TranslationTask.TaskType.GAONNURI_POST,
+                taskDescription = description,
+                assignee = student,
+                assignmentType = TranslationTask.AssignmentType.AUTOMATIC,
+                assignedAt = assignedAt,
+            )
+        )
+    }
+
+    /**
+     * 완료된 과제를 생성합니다.
+     * completedAt을 현재 시간으로, characterCount를 지정된 값으로 설정합니다.
+     *
+     * @param studentNumber 학번
+     * @param description 과제 설명
+     * @param charCount 글자 수
+     * @return 생성된 완료 과제
+     */
+    fun createCompletedTask(
+        studentNumber: String,
+        description: String,
+        charCount: Int
+    ): TranslationTask {
+        val student = createActiveStudent(studentNumber, "학생-$studentNumber")
+        return translationTaskRepository.save(
+            TranslationTask(
+                taskType = TranslationTask.TaskType.GAONNURI_POST,
+                taskDescription = description,
+                assignee = student,
+                assignmentType = TranslationTask.AssignmentType.AUTOMATIC,
+                completedAt = java.time.Instant.now(),
+                characterCount = charCount,
+            )
+        )
+    }
+
+    // ==================== 일괄 검증 메서드 ====================
+
+    /**
+     * 이메일 발송을 검증합니다.
+     * 제목이 일치하고 본문에 지정된 내용이 포함된 이메일이 발송되었는지 확인합니다.
+     *
+     * @param subject 이메일 제목 (부분 일치)
+     * @param contentContains 본문에 포함되어야 하는 내용
+     * @throws AssertionError 이메일이 발송되지 않았거나 내용이 일치하지 않는 경우
+     */
+    fun assertEmailSent(subject: String, contentContains: String) {
+        val messages = fakeJavaMailSender.getMessagesBySubject(subject)
+        check(messages.isNotEmpty()) { "제목이 '$subject'인 이메일이 발송되지 않았습니다." }
+
+        val found = messages.any { message ->
+            val content = fakeJavaMailSender.extractContent(message)
+            content.contains(contentContains)
+        }
+        check(found) { "제목이 '$subject'인 이메일 중 본문에 '$contentContains'가 포함된 것이 없습니다." }
+    }
 }
