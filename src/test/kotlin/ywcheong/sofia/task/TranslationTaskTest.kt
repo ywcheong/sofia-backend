@@ -178,7 +178,7 @@ class TranslationTaskTest(
                 "완료된 과제",
                 user
             )
-            completeTask(completedTask.id)
+            completeTask(completedTask.id, 500)
             helper.createTranslationTask(
                 TranslationTask.TaskType.GAONNURI_POST,
                 "미완료 과제",
@@ -237,7 +237,7 @@ class TranslationTaskTest(
                 user2,
                 TranslationTask.AssignmentType.AUTOMATIC
             )
-            completeTask(completedTask.id)
+            completeTask(completedTask.id, 500)
 
             // when & then - GAONNURI_POST + 미완료 + "ABC" 검색
             mockMvc.get("/tasks?page=0&size=10&taskType=GAONNURI_POST&completed=false&search=ABC") {
@@ -264,7 +264,7 @@ class TranslationTaskTest(
             val oldAssignedAt = java.time.Instant.now().minusSeconds(49 * 60 * 60)
             helper.setTaskAssignedAt(task.id, oldAssignedAt)
             // 과제 완료
-            completeTask(task.id)
+            completeTask(task.id, 500)
 
             // when & then
             mockMvc.get("/tasks?page=0&size=10") {
@@ -288,7 +288,7 @@ class TranslationTaskTest(
             val recentAssignedAt = java.time.Instant.now().minusSeconds(1 * 60 * 60)
             helper.setTaskAssignedAt(task.id, recentAssignedAt)
             // 과제 완료
-            completeTask(task.id)
+            completeTask(task.id, 500)
 
             // when & then
             mockMvc.get("/tasks?page=0&size=10") {
@@ -821,155 +821,6 @@ class TranslationTaskTest(
     }
 
     @Nested
-    @DisplayName("POST /tasks/{taskId}/completion - 과제 완료 보고")
-    inner class ReportCompletion {
-
-        @Test
-        fun `과제를 완료 보고하면 200과 taskId를 반환한다`() {
-            // given - 과제 생성
-            val assignee = helper.createActiveStudent("25-010", "이민수")
-            val task = helper.createTranslationTask(
-                TranslationTask.TaskType.GAONNURI_POST,
-                "완료 테스트 과제",
-                assignee
-            )
-
-            val request = mapOf(
-                "characterCount" to 1000,
-            )
-
-            // when & then (카카오 엔드포인트 권한 필요)
-            mockMvc.post("/tasks/${task.id}/completion") {
-                contentType = MediaType.APPLICATION_JSON
-                content = objectMapper.writeValueAsString(request)
-                header("Authorization", helper.kakaoAuthHeader())
-            }.andExpect {
-                status { isOk() }
-                jsonPath("$.taskId") { value(task.id.toString()) }
-                jsonPath("$.late") { isBoolean() }
-            }
-        }
-
-        @Test
-        fun `존재하지 않는 과제를 완료 보고하면 400을 반환한다`() {
-            // given
-            val nonExistentId = UUID.randomUUID()
-            val request = mapOf(
-                "characterCount" to 1000,
-            )
-
-            // when & then
-            mockMvc.post("/tasks/$nonExistentId/completion") {
-                contentType = MediaType.APPLICATION_JSON
-                content = objectMapper.writeValueAsString(request)
-                header("Authorization", helper.kakaoAuthHeader())
-            }.andExpect {
-                status { isBadRequest() }
-            }
-        }
-
-        @Test
-        fun `이미 완료된 과제를 다시 완료 보고하면 400을 반환한다`() {
-            // given - 완료된 과제 생성
-            val assignee = helper.createActiveStudent("25-011", "최수진")
-            val task = helper.createTranslationTask(
-                TranslationTask.TaskType.GAONNURI_POST,
-                "이미 완료된 과제",
-                assignee
-            )
-            completeTask(task.id)
-
-            val request = mapOf(
-                "characterCount" to 1000,
-            )
-
-            // when & then
-            mockMvc.post("/tasks/${task.id}/completion") {
-                contentType = MediaType.APPLICATION_JSON
-                content = objectMapper.writeValueAsString(request)
-                header("Authorization", helper.kakaoAuthHeader())
-            }.andExpect {
-                status { isBadRequest() }
-            }
-        }
-
-        @Test
-        fun `글자 수가 음수면 400을 반환한다`() {
-            // given
-            val assignee = helper.createActiveStudent("25-012", "정우성")
-            val task = helper.createTranslationTask(
-                TranslationTask.TaskType.GAONNURI_POST,
-                "음수 테스트",
-                assignee
-            )
-
-            val request = mapOf(
-                "characterCount" to -100,
-            )
-
-            // when & then
-            mockMvc.post("/tasks/${task.id}/completion") {
-                contentType = MediaType.APPLICATION_JSON
-                content = objectMapper.writeValueAsString(request)
-                header("Authorization", helper.kakaoAuthHeader())
-            }.andExpect {
-                status { isBadRequest() }
-            }
-        }
-
-        @Test
-        fun `지각 완료 시 경고 이메일이 발송된다`() {
-            // given - 과제 생성 후 할당 시간을 49시간 전으로 설정 (48시간 초과 = 지각)
-            val assignee = helper.createActiveStudent("25-300", "지각테스트")
-            val task = helper.createTranslationTask(
-                TranslationTask.TaskType.GAONNURI_POST,
-                "지각 완료 테스트 과제",
-                assignee
-            )
-            // 과제 할당 시간을 49시간 전으로 설정
-            val lateAssignedAt = java.time.Instant.now().minusSeconds(49 * 60 * 60)
-            helper.setTaskAssignedAt(task.id, lateAssignedAt)
-
-            val request = mapOf(
-                "characterCount" to 1000,
-            )
-
-            // when
-            mockMvc.post("/tasks/${task.id}/completion") {
-                contentType = MediaType.APPLICATION_JSON
-                content = objectMapper.writeValueAsString(request)
-                header("Authorization", helper.kakaoAuthHeader())
-            }.andExpect {
-                status { isOk() }
-                jsonPath("$.late") { value(true) }
-            }
-
-            // then - 경고 이메일이 발송되었는지 검증
-            val mailSender = helper.getMailSender()
-            val emails = mailSender.getMessagesBySubject("번역 과제 경고 발생")
-
-            assertThat(emails).hasSize(1)
-            val emailInfo = mailSender.extractEmailInfo(emails.first())
-            assertThat(emailInfo.content).contains("지각테스트")
-            assertThat(emailInfo.content).contains("지각 완료 테스트 과제")
-        }
-    }
-
-    // 헬퍼 메서드: 과제 완료 처리 (API 사용)
-    private fun completeTask(taskId: UUID) {
-        val request = mapOf(
-            "characterCount" to 500,
-        )
-        mockMvc.post("/tasks/$taskId/completion") {
-            contentType = MediaType.APPLICATION_JSON
-            content = objectMapper.writeValueAsString(request)
-            header("Authorization", helper.kakaoAuthHeader())
-        }.andExpect {
-            status { isOk() }
-        }
-    }
-
-    @Nested
     @DisplayName("GET /tasks/reports/performance.csv - 성과 보고서 생성")
     inner class GeneratePerformanceReport {
 
@@ -1042,16 +893,7 @@ class TranslationTaskTest(
 
     // 헬퍼 메서드: 과제 완료 처리 (지정된 글자 수)
     private fun completeTask(taskId: UUID, characterCount: Int) {
-        val request = mapOf(
-            "characterCount" to characterCount,
-        )
-        mockMvc.post("/tasks/$taskId/completion") {
-            contentType = MediaType.APPLICATION_JSON
-            content = objectMapper.writeValueAsString(request)
-            header("Authorization", helper.kakaoAuthHeader())
-        }.andExpect {
-            status { isOk() }
-        }
+        helper.setTaskCompletedAt(taskId, java.time.Instant.now(), characterCount)
     }
 
     @Nested

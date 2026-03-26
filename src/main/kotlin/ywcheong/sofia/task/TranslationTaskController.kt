@@ -117,38 +117,6 @@ class TranslationTaskController(
         )
     }
 
-    // UC-004: 과제 완료 보고
-    data class ReportCompletionRequest(
-        val characterCount: Int,
-    )
-
-    data class ReportCompletionResponse(
-        val taskId: UUID,
-        val late: Boolean,
-    )
-
-    @AvailableCondition(phases = [SystemPhase.TRANSLATION], permissions = [SofiaPermission.KAKAO_ENDPOINT])
-    @PostMapping("/{taskId}/completion")
-    @Operation(summary = "과제 완료 보고", description = "응답의 late 필드로 마감일 초과 여부 확인 가능")
-    fun reportCompletion(
-        @PathVariable taskId: UUID,
-        @RequestBody request: ReportCompletionRequest,
-    ): ReportCompletionResponse {
-        logger.info { "과제 완료 보고 요청: taskId=$taskId, characterCount=${request.characterCount}" }
-
-        val command = TranslationTaskService.ReportCompletionCommand(
-            taskId = taskId,
-            characterCount = request.characterCount,
-        )
-
-        val task = translationTaskService.reportCompletion(command)
-
-        return ReportCompletionResponse(
-            taskId = task.id,
-            late = translationTaskService.isLate(task),
-        )
-    }
-
     // UC-011: 성과 보고서 생성
     @AvailableCondition(phases = [SystemPhase.RECRUITMENT, SystemPhase.TRANSLATION, SystemPhase.SETTLEMENT], permissions = [SofiaPermission.ADMIN_LEVEL])
     @GetMapping("/reports/performance.csv", produces = ["text/csv; charset=UTF-8"])

@@ -1152,15 +1152,6 @@ class UserManagementTest(
 
     // 헬퍼 메서드: 과제 완료 처리 (API 사용)
     private fun completeTask(taskId: java.util.UUID, characterCount: Int = 1000) {
-        val request = mapOf(
-            "characterCount" to characterCount,
-        )
-        mockMvc.post("/tasks/$taskId/completion") {
-            contentType = MediaType.APPLICATION_JSON
-            content = objectMapper.writeValueAsString(request)
-            header("Authorization", helper.kakaoAuthHeader())
-        }.andExpect {
-            status { isOk() }
-        }
+        helper.setTaskCompletedAt(taskId, java.time.Instant.now(), characterCount)
     }
 }

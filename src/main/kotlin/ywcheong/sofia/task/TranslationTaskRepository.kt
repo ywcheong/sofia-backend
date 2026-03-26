@@ -19,17 +19,15 @@ interface TranslationTaskRepository : JpaRepository<TranslationTask, UUID>, JpaS
     @Query("SELECT COALESCE(SUM(t.characterCount), 0) FROM TranslationTask t WHERE t.completedAt IS NOT NULL AND t.assignee = :assignee")
     fun sumCharacterCountByAssignee(assignee: ywcheong.sofia.user.SofiaUser): Int
 
-    /**
-     * 여러 사용자의 완료된 과제 자수 합계를 일괄 조회
-     * N+1 문제 방지를 위해 사용자 목록 조회 시 활용
-     */
-    @Query("SELECT t.assignee.id, COALESCE(SUM(t.characterCount), 0) FROM TranslationTask t WHERE t.completedAt IS NOT NULL AND t.assignee.id IN :userIds GROUP BY t.assignee.id")
-    fun sumCharacterCountByAssigneeIn(userIds: List<UUID>): List<Array<Any?>>
-
-    /**
+        /**
      * 미완료 && 리마인드 안 됨 && 할당 후 threshold 이상 경과한 과제 조회
      * 48시간 리마인드 대상 찾기용
      */
     @Query("SELECT t FROM TranslationTask t WHERE t.completedAt IS NULL AND t.remindedAt IS NULL AND t.assignedAt <= :threshold")
     fun findTasksNeedingReminder(threshold: Instant): List<TranslationTask>
+
+    /**
+     * 특정 사용자의 미완료 과제를 배정된 지 오래된 순으로 조회
+     */
+    fun findByAssigneeAndCompletedAtIsNullOrderByAssignedAtAsc(assignee: ywcheong.sofia.user.SofiaUser): List<TranslationTask>
 }
