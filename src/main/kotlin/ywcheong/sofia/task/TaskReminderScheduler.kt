@@ -37,14 +37,16 @@ class TaskReminderScheduler(
     @Scheduled(cron = "0 * * * * *") // 매 시간 0초에 실행 (매 1분)
     @Transactional
     fun checkAndSendReminders() {
+
         val reminderThreshold = Instant.now().minusSeconds(taskProperties.lateThresholdSeconds)
         val tasksNeedingReminder = translationTaskRepository.findTasksNeedingReminder(reminderThreshold)
 
         if (tasksNeedingReminder.isEmpty()) {
+            logger.info { "48시간 경과 미제출 과제 검사 완료 (0건)" }
             return
         }
 
-        logger.info { "48시간 경과 미제출 과제 ${tasksNeedingReminder.size}건 발견, 리마인더 발송 시작" }
+        logger.info { "48시간 경과 미제출 과제 검사 완료 (${tasksNeedingReminder.size}건), 리마인더 발송 시작" }
 
         val admins = sofiaUserAuthRepository.findAllByRole(SofiaUserRole.ADMIN)
 

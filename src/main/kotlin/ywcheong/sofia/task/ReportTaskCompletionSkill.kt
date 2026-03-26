@@ -2,6 +2,7 @@ package ywcheong.sofia.task
 
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
+import ywcheong.sofia.commons.BusinessException
 import ywcheong.sofia.kakao.KakaoSkill
 import ywcheong.sofia.phase.SystemPhase
 import ywcheong.sofia.task.user.SofiaUserTaskStatusRepository
@@ -30,29 +31,17 @@ class ReportTaskCompletionSkill(
     ): KakaoSkillResult {
         // 1. 인증되지 않은 사용자 체크
         if (user == null) {
-            return KakaoSkillResult(
-                message = "가입된 번역버디만 사용할 수 있습니다.",
-                quickReplies = listOf(KakaoSkillResult.QuickReply(label = "홈 메뉴", messageText = "홈 메뉴")),
-            )
+            throw BusinessException("가입된 번역버디만 사용할 수 있습니다.")
         }
 
         // 2. 글자 수 파싱
-        val characterCount = parseCharacterCount(params.characterCount) ?: return KakaoSkillResult(
-            message = "글자 수는 숫자여야 합니다.",
-            quickReplies = listOf(KakaoSkillResult.QuickReply(label = "홈 메뉴", messageText = "홈 메뉴")),
-        )
+        val characterCount = parseCharacterCount(params.characterCount) ?: throw BusinessException("글자 수는 숫자여야 합니다.")
         if (characterCount < 0) {
-            return KakaoSkillResult(
-                message = "글자 수는 0 이상이어야 합니다.",
-                quickReplies = listOf(KakaoSkillResult.QuickReply(label = "홈 메뉴", messageText = "홈 메뉴")),
-            )
+            throw BusinessException("글자 수는 0 이상이어야 합니다.")
         }
 
         // 3. taskId UUID 변환
-        val taskId = parseTaskId(params.taskId) ?: return KakaoSkillResult(
-            message = "과제 ID 형식이 올바르지 않습니다.",
-            quickReplies = listOf(KakaoSkillResult.QuickReply(label = "홈 메뉴", messageText = "홈 메뉴")),
-        )
+        val taskId = parseTaskId(params.taskId) ?: throw BusinessException("과제 ID 형식이 올바르지 않습니다.")
 
         // 4. 과제 완료 보고
         val command = TranslationTaskService.ReportCompletionCommand(
