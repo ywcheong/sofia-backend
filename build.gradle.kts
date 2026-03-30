@@ -42,6 +42,7 @@ dependencies {
 
     // Testcontainers
     testImplementation("org.springframework.boot:spring-boot-testcontainers")
+    testImplementation("org.hibernate.orm:hibernate-ant")
     testImplementation("org.testcontainers:junit-jupiter:1.20.6")
     testImplementation("org.testcontainers:postgresql:1.20.6")
 
