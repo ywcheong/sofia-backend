@@ -1,0 +1,9 @@
+sofia:
+  first-boot:
+    create-admin-if-empty: false
+  email:
+    enabled: true
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop

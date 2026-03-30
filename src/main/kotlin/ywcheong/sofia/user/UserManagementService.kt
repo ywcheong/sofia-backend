@@ -31,14 +31,6 @@ class UserManagementService(
         val ALLOWED_SORT_FIELDS = setOf(
             "id", "studentNumber", "studentName", "role", "rest", "warningCount", "totalCharCount"
         )
-
-        private fun convertBytesToUUID(bytes: ByteArray): UUID {
-            checkNotNull(bytes) { "UUID bytes cannot be null" }
-            val byteBuffer = java.nio.ByteBuffer.wrap(bytes)
-            val mostSignificantBits = byteBuffer.long
-            val leastSignificantBits = byteBuffer.long
-            return UUID(mostSignificantBits, leastSignificantBits)
-        }
     }
 
     /**
@@ -91,7 +83,7 @@ class UserManagementService(
         // Projection을 Result로 변환
         return projectionPage.map { proj ->
             FindAllUsersResult(
-                id = convertBytesToUUID(proj.getId()),
+                id = proj.getId(),
                 studentNumber = proj.getStudentNumber(),
                 studentName = proj.getStudentName(),
                 role = SofiaUserRole.valueOf(proj.getRole()),

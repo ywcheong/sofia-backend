@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+CONTAINER_NAME=sofia-postgres
+PORT=5432
+DB=sofia
+USER=sofia
+PASSWORD=sofia
+
+# JDBC Full URL:
+# jdbc:postgresql://localhost:5432/sofia?user=sofia&password=sofia
+
+case "${1:-}" in
+  start)
+    if docker ps --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
+      echo "Already running: ${CONTAINER_NAME}"
+      exit 0
+    fi
+    docker rm -f "${CONTAINER_NAME}" 2>/dev/null || true
+    docker run -d \
+      --name "${CONTAINER_NAME}" \
+      -p "${PORT}:5432" \
+      -e POSTGRES_DB="${DB}" \
+      -e POSTGRES_USER="${USER}" \
+      -e POSTGRES_PASSWORD="${PASSWORD}" \
+      postgres:17
+    echo "Waiting for PostgreSQL to be ready..."
+    until docker exec "${CONTAINER_NAME}" pg_isready -U "${USER}" -d "${DB}" -q 2>/dev/null; do
+      sleep 0.5
+    done
+    echo "PostgreSQL is ready."
+    echo "export SOFIA_DATASOURCE_URL=jdbc:postgresql://localhost:${PORT}/${DB}"
+    ;;
+  stop)
+    docker stop "${CONTAINER_NAME}" 2>/dev/null && echo "Stopped: ${CONTAINER_NAME}" || echo "Not running: ${CONTAINER_NAME}"
+    docker rm "${CONTAINER_NAME}" 2>/dev/null || true
+    ;;
+  *)
+    echo "Usage: $0 {start|stop}"
+    exit 1
+    ;;
+esac

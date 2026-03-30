@@ -32,8 +32,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("tools.jackson.module:jackson-module-kotlin")
     implementation("org.hibernate.orm:hibernate-envers")
-    runtimeOnly("com.h2database:h2")
-    runtimeOnly("com.mysql:mysql-connector-j")
+    runtimeOnly("org.postgresql:postgresql")
     testImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")
     testImplementation("org.springframework.boot:spring-boot-starter-restclient-test")
     testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
@@ -44,7 +43,7 @@ dependencies {
     // Testcontainers
     testImplementation("org.springframework.boot:spring-boot-testcontainers")
     testImplementation("org.testcontainers:junit-jupiter:1.20.6")
-    testImplementation("org.testcontainers:mysql:1.20.6")
+    testImplementation("org.testcontainers:postgresql:1.20.6")
 
     // ArchUnit
     testImplementation("com.tngtech.archunit:archunit-junit5:1.3.0")
@@ -65,6 +64,4 @@ allOpen {
 
 tasks.withType<Test> {
     useJUnitPlatform()
-    systemProperty("sofia.first-boot.create-admin-if-empty", "false")
-    systemProperty("sofia.email.enabled", "true") // 통합 테스트에서는 Mock Email Service를 사용하므로 활성화해도 문제없음
 }

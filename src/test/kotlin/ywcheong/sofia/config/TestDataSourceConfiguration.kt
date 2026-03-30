@@ -1,15 +1,14 @@
 package ywcheong.sofia.config
 
-import org.springframework.boot.test.context.TestConfiguration
+import org.springframework.boot.testcontainers.service.connection.ServiceConnection
 import org.springframework.context.annotation.Bean
-import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder
-import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType
-import javax.sql.DataSource
+import org.springframework.context.annotation.Configuration
+import org.testcontainers.containers.PostgreSQLContainer
 
-@TestConfiguration
+@Configuration
 class TestDataSourceConfiguration {
     @Bean
-    fun dataSource(): DataSource = EmbeddedDatabaseBuilder()
-        .setType(EmbeddedDatabaseType.H2)
-        .build()
+    @ServiceConnection
+    fun postgresqlContainer(): PostgreSQLContainer<*> =
+        PostgreSQLContainer("postgres:17").withReuse(true)
 }

@@ -2,10 +2,10 @@ spring:
   application:
     name: sofia
   datasource:
-    url: jdbc:h2:mem:testdb;MODE=MySQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
+    url: ${SOFIA_DATASOURCE_URL}
+    username: ${SOFIA_DATASOURCE_USERNAME}
+    password: ${SOFIA_DATASOURCE_PASSWORD}
+    driver-class-name: org.postgresql.Driver
   mail:
     host: localhost
     port: 25
@@ -15,6 +15,8 @@ spring:
         audit_table_suffix: _audit
         audit_strategy: org.hibernate.envers.strategy.DefaultAuditStrategy
     open-in-view: false
+    hibernate:
+      ddl-auto: validate
   h2:
     console:
       enabled: true

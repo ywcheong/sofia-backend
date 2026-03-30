@@ -85,7 +85,7 @@ interface SofiaUserRepository : JpaRepository<SofiaUser, UUID>, JpaSpecification
 }
 
 interface UserManagementProjection {
-    fun getId(): ByteArray
+    fun getId(): UUID
     fun getStudentNumber(): String
     fun getStudentName(): String
     fun getRole(): String
