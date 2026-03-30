@@ -6,6 +6,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 data class TranslationTaskProperties(
     val secondsPerCharacter: Double,
     val lateThresholdHours: Long,
+    val reminderEnabled: Boolean,
 ) {
     val lateThresholdSeconds: Long
         get() = lateThresholdHours * 60 * 60

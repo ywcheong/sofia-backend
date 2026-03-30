@@ -1,6 +1,7 @@
 package ywcheong.sofia.task
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
@@ -16,6 +17,7 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 @Component
+@ConditionalOnProperty(prefix = "sofia.task", name = ["reminder-enabled"], havingValue = "true")
 class TaskReminderScheduler(
     private val translationTaskRepository: TranslationTaskRepository,
     private val sofiaUserAuthRepository: SofiaUserAuthRepository,

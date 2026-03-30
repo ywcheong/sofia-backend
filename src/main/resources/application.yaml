@@ -28,6 +28,7 @@ sofia:
   task:
     seconds-per-character: 3.942
     late-threshold-hours: 48
+    reminder-enabled: false
   kakao:
     skill:
       secret-token: replace-me-11!!

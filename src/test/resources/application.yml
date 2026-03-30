@@ -3,6 +3,8 @@ sofia:
     create-admin-if-empty: false
   email:
     enabled: true
+  task:
+    reminder-enabled: true
 spring:
   jpa:
     hibernate:
