@@ -66,4 +66,5 @@ allOpen {
 tasks.withType<Test> {
     useJUnitPlatform()
     systemProperty("sofia.first-boot.create-admin-if-empty", "false")
+    systemProperty("sofia.email.enabled", "true") // 통합 테스트에서는 Mock Email Service를 사용하므로 활성화해도 문제없음
 }
