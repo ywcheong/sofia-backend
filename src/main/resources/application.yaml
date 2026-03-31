@@ -17,9 +17,6 @@ spring:
     open-in-view: false
     hibernate:
       ddl-auto: validate
-  h2:
-    console:
-      enabled: true
 
 server:
   forward-headers-strategy: framework
@@ -33,7 +30,7 @@ sofia:
     skill:
       secret-token: replace-me-11!!
   first-boot:
-    create-admin-if-empty: true
+    create-admin-if-empty: false
     admin-student-number: 18-100
   email:
     enabled: false
@@ -41,4 +38,4 @@ sofia:
     from-email: sofia-test@ywcheong.com
     from-name: KSA 국제부 번역버디 ERP
   dummy:
-    enabled: true
+    enabled: false
