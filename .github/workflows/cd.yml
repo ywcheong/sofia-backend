@@ -41,17 +41,18 @@ jobs:
       - name: Build
         run: ./gradlew build
 
-      - name: Create and push tag
-        run: |
-          git tag "v${{ steps.version.outputs.version }}"
-          git push origin "v${{ steps.version.outputs.version }}"
-
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H "${{ secrets.EC2_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Upload deploy scripts to EC2
+        run: |
+          scp -i ~/.ssh/deploy_key \
+            deploy/deploy.sh deploy/init.sh \
+            "${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:${{ secrets.EC2_DEPLOY_DIR }}/"
 
       - name: Upload jar to EC2
         run: |
@@ -64,6 +65,11 @@ jobs:
           ssh -i ~/.ssh/deploy_key \
             "${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}" \
             "${{ secrets.EC2_DEPLOY_SCRIPT }} '${{ secrets.EC2_DEPLOY_DIR }}/sofia-${{ steps.version.outputs.version }}.jar'"
+
+      - name: Create and push tag
+        run: |
+          git tag "v${{ steps.version.outputs.version }}"
+          git push origin "v${{ steps.version.outputs.version }}"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
