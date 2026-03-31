@@ -2,10 +2,11 @@ spring:
   application:
     name: sofia
   datasource:
-    url: ${SOFIA_DATASOURCE_URL}
+    url: ${SOFIA_DATASOURCE_URL}?prepareThreshold=0&preparedStatementCacheQueries=0&preferQueryMode=simple # https://jdbc.postgresql.org/documentation/use/
     username: ${SOFIA_DATASOURCE_USERNAME}
     password: ${SOFIA_DATASOURCE_PASSWORD}
     driver-class-name: org.postgresql.Driver
+    type: org.springframework.jdbc.datasource.DriverManagerDataSource # Do not use HikariCP
   mail:
     host: localhost
     port: 25
