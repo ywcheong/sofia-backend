@@ -5,6 +5,9 @@ sofia:
     enabled: true
   task:
     reminder-enabled: true
+  kakao:
+    skill:
+      secret-token: replace-me-11!!
 spring:
   jpa:
     hibernate:

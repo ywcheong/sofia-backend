@@ -48,7 +48,6 @@
 - 메서드 레벨 `@DisplayName`은 `"{HTTP_METHOD} {endpoint} - {비즈니스 의미}"` 형식을 따른다.
 - 내부 클래스(`inner class`)명은 비즈니스 행위를 기반으로 작명한다. (`CreateTests`, `FindAllTests` 등 CRUD 용어 지양)
 - 테스트에서는 인증, 페이즈 조건은 검증하지 않음 - 횡단 관심이므로 별도의 인증테스트, 페이즈테스트에서 모두 몰아서 검사하기 때문
-- 테스트 환경에서 외부 리소스(이메일, 외부 API 등)가 실제로 호출되지 않도록, `build.gradle.kts`의 `tasks.withType<Test>` 블록에서 `systemProperty()`로 설정값을 주입하여 비활성화한다. 별도의 테스트용 설정 파일을 생성하지 않는다.
 
 ## 버전관리 규칙
 
