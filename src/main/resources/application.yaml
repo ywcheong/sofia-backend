@@ -22,7 +22,7 @@ sofia:
   task:
     seconds-per-character: 3.942
     late-threshold-hours: 48
-    reminder-enabled: false
+    reminder-enabled: true
   kakao:
     skill:
       secret-token: ${SOFIA_KAKAO_SKILL_KEY}
