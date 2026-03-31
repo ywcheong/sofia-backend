@@ -48,7 +48,7 @@ class TestScenarioHelper(
     private val logger = KotlinLogging.logger { }
 
     companion object {
-        const val DEFAULT_KAKAO_SECRET = "replace-me-11!!"
+        val DEFAULT_KAKAO_SECRET: String = "replace-me-11!!"
     }
 
     init {

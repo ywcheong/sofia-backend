@@ -33,7 +33,7 @@ build_log_file() {
 }
 
 refresh_secrets_from_env() {
-    local secret_keys=("SOFIA_DATASOURCE_URL" "SOFIA_DATASOURCE_PASSWORD" "SOFIA_DATASOURCE_USERNAME")
+    local secret_keys=("SOFIA_DATASOURCE_URL" "SOFIA_DATASOURCE_PASSWORD" "SOFIA_DATASOURCE_USERNAME" "SOFIA_KAKAO_SKILL_KEY")
     local available=false
 
     for key in "${secret_keys[@]}"; do
