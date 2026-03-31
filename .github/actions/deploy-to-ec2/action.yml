@@ -1,0 +1,65 @@
+name: Deploy to EC2
+description: Validate config, setup SSH, upload files, execute remote command
+
+inputs:
+  ssh-private-key:
+    required: true
+    description: SSH key for remote machine
+  host:
+    required: true
+    description: SSH host
+  username:
+    required: true
+    description: SSH username
+  files:
+    description: Space-separated list of local files to upload
+    required: false
+  remote-command:
+    description: Command to execute on the remote host
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: 설정값 누락 확인
+      shell: bash
+      env:
+        _SSH_PRIVATE_KEY: ${{ inputs.ssh-private-key }}
+        _HOST: ${{ inputs.host }}
+        _USERNAME: ${{ inputs.username }}
+        _REMOTE_COMMAND: ${{ inputs.remote-command }}
+      run: |
+        missing=()
+        for var in _SSH_PRIVATE_KEY _HOST _USERNAME _REMOTE_COMMAND; do
+          if [ -z "${!var}" ]; then
+            missing+=("${var#_}")
+          fi
+        done
+        if [ ${#missing[@]} -gt 0 ]; then
+          echo "::error::Missing: ${missing[*]}"
+          exit 1
+        fi
+        echo "모든 필수 설정값이 확인되었습니다."
+
+    - name: SSH 연결 준비
+      shell: bash
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ inputs.ssh-private-key }}" > ~/.ssh/deploy_key
+        chmod 600 ~/.ssh/deploy_key
+        ssh-keyscan -H "${{ inputs.host }}" >> ~/.ssh/known_hosts 2>/dev/null
+
+    - name: 파일 업로드
+      if: ${{ inputs.files != '' }}
+      shell: bash
+      run: |
+        scp -i ~/.ssh/deploy_key \
+          ${{ inputs.files }} \
+          "${{ inputs.username }}@${{ inputs.host }}:/app/"
+
+    - name: 원격 명령 실행
+      shell: bash
+      run: |
+        ssh -i ~/.ssh/deploy_key \
+          "${{ inputs.username }}@${{ inputs.host }}" \
+          "${{ inputs.remote-command }}"

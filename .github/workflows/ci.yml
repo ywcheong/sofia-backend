@@ -1,4 +1,4 @@
-name: CI
+name: Sofia CI Pipeline
 
 on:
   pull_request:
@@ -15,13 +15,15 @@ jobs:
           distribution: temurin
           java-version: "21"
 
-      - uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: gradle-${{ hashFiles('**/*.gradle.kts', 'gradle.properties') }}
-          restore-keys: gradle-
+      - uses: gradle/actions/setup-gradle@v4
 
-      - name: Run checks
+      - name: 버전 태그 중복 확인
+        run: |
+          VERSION=$(grep 'ywcheong.sofia.version=' gradle.properties | cut -d'=' -f2)
+          if git ls-remote --tags origin "refs/tags/v${VERSION}" | grep -q .; then
+            echo "::error::Tag v${VERSION} already exists. Update ywcheong.sofia.version in gradle.properties."
+            exit 1
+          fi
+
+      - name: 검사 수행
         run: ./gradlew check
