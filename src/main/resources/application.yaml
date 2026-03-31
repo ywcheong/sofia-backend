@@ -11,10 +11,6 @@ spring:
     host: localhost
     port: 25
   jpa:
-    properties:
-      org.hibernate.envers:
-        audit_table_suffix: _audit
-        audit_strategy: org.hibernate.envers.strategy.DefaultAuditStrategy
     open-in-view: false
     hibernate:
       ddl-auto: validate
