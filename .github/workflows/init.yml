@@ -1,0 +1,43 @@
+name: Sofia Remote Init (Run only once)
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: init
+  cancel-in-progress: false
+
+# 이 파이프라인이 필요로 하는 설정값 목록:
+# Required Variables (비민감): EC2_HOST, EC2_USERNAME
+# Required Secrets  (민감):   EC2_SSH_PRIVATE_KEY
+# Optional Secrets  (민감):   NOTIFICATION_WEBHOOK_URL
+
+jobs:
+  init:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 인증서 파일 생성
+        env:
+          CF_CERT: ${{ secrets.CLOUDFLARE_CERTS_CERT }}
+          CF_KEY: ${{ secrets.CLOUDFLARE_CERTS_KEY }}
+        run: |
+          printf '%s' "$CF_CERT" > deploy/cert.pem
+          printf '%s' "$CF_KEY"  > deploy/key.pem
+
+      - name: EC2 초기화
+        uses: ./.github/actions/deploy-to-ec2
+        with:
+          ssh-private-key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+          host: ${{ vars.EC2_HOST }}
+          username: ${{ vars.EC2_USERNAME }}
+          files: deploy/init.sh deploy/nginx-sofia.conf deploy/cert.pem deploy/key.pem
+          remote-command: "bash /app/init.sh"
+
+      - name: 실패 알림
+        if: failure()
+        uses: ./.github/actions/notify-failure
+        with:
+          webhook-url: ${{ secrets.NOTIFICATION_WEBHOOK_URL }}
+          message: "Sofia 초기화 실패\n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"

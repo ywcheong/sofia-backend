@@ -1,0 +1,25 @@
+name: Notify Failure
+description: Send failure notification via webhook
+
+inputs:
+  webhook-url:
+    description: Notification webhook URL (optional - skips if empty)
+    required: false
+  message:
+    description: Failure message to send
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: 실패 알림
+      shell: bash
+      env:
+        WEBHOOK_URL: ${{ inputs.webhook-url }}
+        MESSAGE: ${{ inputs.message }}
+      run: |
+        if [ -n "$WEBHOOK_URL" ]; then
+          curl -s -X POST "$WEBHOOK_URL" \
+            -H 'Content-Type: application/json' \
+            -d "{\"text\":\"${MESSAGE}\"}"
+        fi

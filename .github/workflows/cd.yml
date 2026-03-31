@@ -1,4 +1,4 @@
-name: CD
+name: Sofia CD Pipeline
 
 on:
   push:
@@ -10,6 +10,11 @@ concurrency:
 
 permissions:
   contents: write
+
+# 이 파이프라인이 필요로 하는 설정값 목록:
+# Required Variables (비민감): EC2_HOST, EC2_USERNAME
+# Required Secrets  (민감):   EC2_SSH_PRIVATE_KEY, SOFIA_DATASOURCE_URL, SOFIA_DATASOURCE_PASSWORD, SOFIA_DATASOURCE_USERNAME
+# Optional Secrets  (민감):   NOTIFICATION_WEBHOOK_URL
 
 jobs:
   deploy:
@@ -24,63 +29,53 @@ jobs:
           distribution: temurin
           java-version: "21"
 
-      - uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: gradle-${{ hashFiles('**/*.gradle.kts', 'gradle.properties') }}
-          restore-keys: gradle-
+      - uses: gradle/actions/setup-gradle@v4
 
-      - name: Read version
+      - name: 버전 읽기
         id: version
         run: |
           VERSION=$(grep 'ywcheong.sofia.version=' gradle.properties | cut -d'=' -f2)
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
 
-      - name: Build
+      - name: 빌드
         run: ./gradlew build
 
-      - name: Create and push tag
+      - name: 시크릿 환경변수 파일 생성
+        env:
+          SOFIA_DATASOURCE_URL: ${{ secrets.SOFIA_DATASOURCE_URL }}
+          SOFIA_DATASOURCE_PASSWORD: ${{ secrets.SOFIA_DATASOURCE_PASSWORD }}
+          SOFIA_DATASOURCE_USERNAME: ${{ secrets.SOFIA_DATASOURCE_USERNAME }}
+        run: |
+          {
+            echo "SOFIA_DATASOURCE_URL=${SOFIA_DATASOURCE_URL}"
+            echo "SOFIA_DATASOURCE_PASSWORD=${SOFIA_DATASOURCE_PASSWORD}"
+            echo "SOFIA_DATASOURCE_USERNAME=${SOFIA_DATASOURCE_USERNAME}"
+          } > deploy/secrets.env
+
+      - name: EC2 배포
+        uses: ./.github/actions/deploy-to-ec2
+        with:
+          ssh-private-key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+          host: ${{ vars.EC2_HOST }}
+          username: ${{ vars.EC2_USERNAME }}
+          files: deploy/deploy.sh deploy/secrets.env build/libs/sofia-${{ steps.version.outputs.version }}.jar
+          remote-command: "/app/deploy.sh '/app/sofia-${{ steps.version.outputs.version }}.jar'"
+
+      - name: Git 태그 생성 및 푸시
         run: |
           git tag "v${{ steps.version.outputs.version }}"
           git push origin "v${{ steps.version.outputs.version }}"
 
-      - name: Setup SSH
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H "${{ secrets.EC2_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
-
-      - name: Upload jar to EC2
-        run: |
-          scp -i ~/.ssh/deploy_key \
-            "build/libs/sofia-${{ steps.version.outputs.version }}.jar" \
-            "${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:${{ secrets.EC2_DEPLOY_DIR }}/"
-
-      - name: Run deploy script
-        run: |
-          ssh -i ~/.ssh/deploy_key \
-            "${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}" \
-            "${{ secrets.EC2_DEPLOY_SCRIPT }} '${{ secrets.EC2_DEPLOY_DIR }}/sofia-${{ steps.version.outputs.version }}.jar'"
-
-      - name: Create GitHub Release
+      - name: GitHub Release 생성
         uses: softprops/action-gh-release@v2
         with:
           tag_name: "v${{ steps.version.outputs.version }}"
           files: build/libs/sofia-${{ steps.version.outputs.version }}.jar
           generate_release_notes: true
 
-      - name: Notify on failure
+      - name: 실패 알림
         if: failure()
-        env:
-          WEBHOOK_URL: ${{ secrets.NOTIFICATION_WEBHOOK_URL }}
-          VERSION: ${{ steps.version.outputs.version }}
-          RUN_URL: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-        run: |
-          if [ -n "$WEBHOOK_URL" ]; then
-            curl -s -X POST "$WEBHOOK_URL" \
-              -H 'Content-Type: application/json' \
-              -d "{\"text\":\"Sofia v${VERSION} 배포 실패\n${RUN_URL}\"}"
-          fi
+        uses: ./.github/actions/notify-failure
+        with:
+          webhook-url: ${{ secrets.NOTIFICATION_WEBHOOK_URL }}
+          message: "Sofia v${{ steps.version.outputs.version }} 배포 실패\n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"

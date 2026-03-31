@@ -36,3 +36,6 @@ sofia:
     from-name: KSA 국제부 번역버디 ERP
   dummy:
     enabled: false
+  cors:
+    allowed-origins:
+      - https://sofia.ywcheong.com
