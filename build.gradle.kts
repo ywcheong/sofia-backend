@@ -1,3 +1,6 @@
+val sofiaVersion = project.property("ywcheong.sofia.version") as String
+val sofiaJdkVersion = (project.property("ywcheong.sofia.jdk_version") as String).toInt()
+
 plugins {
     kotlin("jvm") version "2.2.21"
     kotlin("plugin.spring") version "2.2.21"
@@ -7,12 +10,12 @@ plugins {
 }
 
 group = "ywcheong"
-version = "0.0.1-SNAPSHOT"
+version = sofiaVersion
 description = "sofia"
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+        languageVersion = JavaLanguageVersion.of(sofiaJdkVersion)
     }
 }
 

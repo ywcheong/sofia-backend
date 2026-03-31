@@ -1,0 +1,86 @@
+name: CD
+
+on:
+  push:
+    branches: [ main ]
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ hashFiles('**/*.gradle.kts', 'gradle.properties') }}
+          restore-keys: gradle-
+
+      - name: Read version
+        id: version
+        run: |
+          VERSION=$(grep 'ywcheong.sofia.version=' gradle.properties | cut -d'=' -f2)
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+
+      - name: Build
+        run: ./gradlew build
+
+      - name: Create and push tag
+        run: |
+          git tag "v${{ steps.version.outputs.version }}"
+          git push origin "v${{ steps.version.outputs.version }}"
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "${{ secrets.EC2_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Upload jar to EC2
+        run: |
+          scp -i ~/.ssh/deploy_key \
+            "build/libs/sofia-${{ steps.version.outputs.version }}.jar" \
+            "${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:${{ secrets.EC2_DEPLOY_DIR }}/"
+
+      - name: Run deploy script
+        run: |
+          ssh -i ~/.ssh/deploy_key \
+            "${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}" \
+            "${{ secrets.EC2_DEPLOY_SCRIPT }} '${{ secrets.EC2_DEPLOY_DIR }}/sofia-${{ steps.version.outputs.version }}.jar'"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: "v${{ steps.version.outputs.version }}"
+          files: build/libs/sofia-${{ steps.version.outputs.version }}.jar
+          generate_release_notes: true
+
+      - name: Notify on failure
+        if: failure()
+        env:
+          WEBHOOK_URL: ${{ secrets.NOTIFICATION_WEBHOOK_URL }}
+          VERSION: ${{ steps.version.outputs.version }}
+          RUN_URL: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        run: |
+          if [ -n "$WEBHOOK_URL" ]; then
+            curl -s -X POST "$WEBHOOK_URL" \
+              -H 'Content-Type: application/json' \
+              -d "{\"text\":\"Sofia v${VERSION} 배포 실패\n${RUN_URL}\"}"
+          fi
