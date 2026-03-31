@@ -21,10 +21,12 @@ class SofiaFirstBootAdminInitializer(
 
     override fun run(vararg args: String) {
         if (!properties.createAdminIfEmpty) {
-            if (userAuthRepository.countByRole(SofiaUserRole.ADMIN) > 0) {
-                logger.warn { "데이터베이스에 관리자가 존재하기 때문에 관리자를 생성하지 않았습니다. 이 기능을 비활성화하기 위해 `sofia.first-boot`를 수정하세요." }
-                return
-            }
+            return
+        }
+
+        if (userAuthRepository.countByRole(SofiaUserRole.ADMIN) > 0) {
+            logger.warn { "데이터베이스에 관리자가 존재하기 때문에 관리자를 생성하지 않았습니다. 이 기능을 비활성화하기 위해 `sofia.first-boot`를 수정하세요." }
+            return
         }
 
         val adminUser = SofiaUser(
