@@ -31,6 +31,7 @@ runs:
         _HOST: ${{ inputs.host }}
         _USERNAME: ${{ inputs.username }}
         _REMOTE_COMMAND: ${{ inputs.remote-command }}
+        _SSH_HOST_KEY: ${{ inputs.ssh-host-key }}
       run: |
         missing=()
         for var in _SSH_PRIVATE_KEY _HOST _SSH_HOST_KEY _USERNAME _REMOTE_COMMAND; do
