@@ -8,6 +8,9 @@ inputs:
   host:
     required: true
     description: SSH host
+  ssh-host-key:
+    required: true
+    description: SSH host public key for strict host verification
   username:
     required: true
     description: SSH username
@@ -30,7 +33,7 @@ runs:
         _REMOTE_COMMAND: ${{ inputs.remote-command }}
       run: |
         missing=()
-        for var in _SSH_PRIVATE_KEY _HOST _USERNAME _REMOTE_COMMAND; do
+        for var in _SSH_PRIVATE_KEY _HOST _SSH_HOST_KEY _USERNAME _REMOTE_COMMAND; do
           if [ -z "${!var}" ]; then
             missing+=("${var#_}")
           fi
@@ -47,7 +50,7 @@ runs:
         mkdir -p ~/.ssh
         echo "${{ inputs.ssh-private-key }}" > ~/.ssh/deploy_key
         chmod 600 ~/.ssh/deploy_key
-        ssh-keyscan -H "${{ inputs.host }}" >> ~/.ssh/known_hosts 2>/dev/null
+        echo "${{ inputs.host }} ${{ inputs.ssh-host-key }}" >> ~/.ssh/known_hosts
 
     - name: 파일 업로드
       if: ${{ inputs.files != '' }}

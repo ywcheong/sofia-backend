@@ -24,7 +24,14 @@ install_and_configure_nginx() {
     sudo systemctl enable --now nginx
 }
 
+save_host_key() {
+    echo "Saving host key..."
+    ssh-keyscan -t ed25519 localhost > /app/host_key 2>/dev/null
+    echo "Host key saved to /app/host_key"
+}
+
 # --- Main ---
 install_jdk
 install_and_configure_nginx
+save_host_key
 echo "Done."
