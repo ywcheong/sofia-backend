@@ -390,14 +390,17 @@ class SystemPhaseTest(
         }
 
         @Test
-        @DisplayName("POST /system-phase/transit/deactivation - KEEP_ALL 모드로 전환 시 모든 사용자 유지")
-        fun `KEEP_ALL 모드로 전환하면 모든 사용자가 유지된다`() {
+        @DisplayName("POST /system-phase/transit/deactivation - KEEP_ALL 모드로 전환 시 모든 사용자 유지 및 과제 삭제")
+        fun `KEEP_ALL 모드로 전환하면 모든 사용자가 유지되고 모든 과제가 삭제된다`() {
             // given - SETTLEMENT 상태로 설정
             val newAdminInfo = helper.setupScenarioWithAdmin(SystemPhase.SETTLEMENT)
             // 사용자 생성
-            helper.createActiveStudent("25-001", "학생1")
-            helper.createActiveStudent("25-002", "학생2")
+            val student1 = helper.createActiveStudent("25-001", "학생1")
+            val student2 = helper.createActiveStudent("25-002", "학생2")
             helper.createAdminAndGetToken("admin2", "관리자2")
+            // 과제 생성
+            helper.createTranslationTask(TranslationTask.TaskType.GAONNURI_POST, "과제1", student1)
+            helper.createTranslationTask(TranslationTask.TaskType.EXTERNAL_POST, "과제2", student2)
 
             val request = mapOf("userRetentionMode" to "KEEP_ALL")
 
@@ -419,17 +422,28 @@ class SystemPhaseTest(
                 status { isOk() }
                 jsonPath("$.totalElements") { value(4) } // newAdminInfo + student1 + student2 + otherAdmin
             }
+
+            // then - 모든 과제가 삭제되었음을 검증
+            mockMvc.get("/tasks?page=0&size=10") {
+                header("Authorization", helper.adminAuthHeader(newAdminInfo.secretToken))
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.totalElements") { value(0) }
+            }
         }
 
         @Test
-        @DisplayName("POST /system-phase/transit/deactivation - KEEP_ADMINS 모드로 전환 시 학생만 삭제")
-        fun `KEEP_ADMINS 모드로 전환하면 학생만 삭제되고 관리자는 유지된다`() {
+        @DisplayName("POST /system-phase/transit/deactivation - KEEP_ADMINS 모드로 전환 시 학생만 삭제 및 과제 삭제")
+        fun `KEEP_ADMINS 모드로 전환하면 학생만 삭제되고 관리자는 유지되며 모든 과제가 삭제된다`() {
             // given - SETTLEMENT 상태로 설정
             val newAdminInfo = helper.setupScenarioWithAdmin(SystemPhase.SETTLEMENT)
             // 학생 2명 + 관리자 1명 생성
-            helper.createActiveStudent("25-010", "학생A")
-            helper.createActiveStudent("25-011", "학생B")
+            val studentA = helper.createActiveStudent("25-010", "학생A")
+            val studentB = helper.createActiveStudent("25-011", "학생B")
             helper.createAdminAndGetToken("admin-keep", "유지될관리자")
+            // 과제 생성
+            helper.createTranslationTask(TranslationTask.TaskType.GAONNURI_POST, "과제A", studentA)
+            helper.createTranslationTask(TranslationTask.TaskType.EXTERNAL_POST, "과제B", studentB)
 
             val request = mapOf("userRetentionMode" to "KEEP_ADMINS")
 
@@ -452,17 +466,28 @@ class SystemPhaseTest(
                 jsonPath("$.totalElements") { value(2) } // newAdminInfo + otherAdmin
                 jsonPath("$.content[*].role") { value(mutableListOf("ADMIN", "ADMIN")) }
             }
+
+            // then - 모든 과제가 삭제되었음을 검증
+            mockMvc.get("/tasks?page=0&size=10") {
+                header("Authorization", helper.adminAuthHeader(newAdminInfo.secretToken))
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.totalElements") { value(0) }
+            }
         }
 
         @Test
-        @DisplayName("POST /system-phase/transit/deactivation - KEEP_SELF 모드로 전환 시 요청자만 유지")
-        fun `KEEP_SELF 모드로 전환하면 요청한 관리자만 유지된다`() {
+        @DisplayName("POST /system-phase/transit/deactivation - KEEP_SELF 모드로 전환 시 요청자만 유지 및 과제 삭제")
+        fun `KEEP_SELF 모드로 전환하면 요청한 관리자만 유지되고 모든 과제가 삭제된다`() {
             // given - SETTLEMENT 상태로 설정
             val newAdminInfo = helper.setupScenarioWithAdmin(SystemPhase.SETTLEMENT)
             // 학생 2명 + 다른 관리자 1명 생성
-            helper.createActiveStudent("25-020", "삭제될학생1")
-            helper.createActiveStudent("25-021", "삭제될학생2")
+            val student1 = helper.createActiveStudent("25-020", "삭제될학생1")
+            val student2 = helper.createActiveStudent("25-021", "삭제될학생2")
             helper.createAdminAndGetToken("admin-delete", "삭제될관리자")
+            // 과제 생성
+            helper.createTranslationTask(TranslationTask.TaskType.GAONNURI_POST, "과제1", student1)
+            helper.createTranslationTask(TranslationTask.TaskType.EXTERNAL_POST, "과제2", student2)
 
             val request = mapOf("userRetentionMode" to "KEEP_SELF")
 
@@ -484,6 +509,14 @@ class SystemPhaseTest(
                 status { isOk() }
                 jsonPath("$.totalElements") { value(1) } // newAdminInfo만 유지
                 jsonPath("$.content[0].id") { value(newAdminInfo.userId.toString()) }
+            }
+
+            // then - 모든 과제가 삭제되었음을 검증
+            mockMvc.get("/tasks?page=0&size=10") {
+                header("Authorization", helper.adminAuthHeader(newAdminInfo.secretToken))
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.totalElements") { value(0) }
             }
         }
     }

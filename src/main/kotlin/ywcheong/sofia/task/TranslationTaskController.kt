@@ -117,18 +117,17 @@ class TranslationTaskController(
         )
     }
 
-    // UC-011: 성과 보고서 생성
+    // 번역 과제 CSV 다운로드
     @AvailableCondition(phases = [SystemPhase.RECRUITMENT, SystemPhase.TRANSLATION, SystemPhase.SETTLEMENT], permissions = [SofiaPermission.ADMIN_LEVEL])
-    @GetMapping("/reports/performance.csv", produces = ["text/csv; charset=UTF-8"])
-    @Operation(summary = "성과 보고서 생성", description = "CSV 포맷으로 다운로드, UTF-8 BOM 포함")
-    fun generatePerformanceReport(): ResponseEntity<String> {
-        logger.info { "성과 보고서 생성 요청" }
+    @GetMapping("/csv", produces = ["text/csv; charset=UTF-8"])
+    @Operation(summary = "번역 과제 CSV 다운로드", description = "모든 번역 과제 데이터를 CSV 포맷으로 다운로드")
+    fun downloadCsv(): ResponseEntity<String> {
+        logger.info { "번역 과제 CSV 다운로드 요청" }
 
-        val reports = translationTaskCsvExportService.generatePerformanceReport()
-        val csv = translationTaskCsvExportService.toCsv(reports)
+        val csv = translationTaskCsvExportService.generateCsv()
 
         return ResponseEntity.ok()
-            .header("Content-Disposition", "attachment; filename=performance_report.csv")
+            .header("Content-Disposition", "attachment; filename=tasks.csv")
             .body(csv)
     }
 

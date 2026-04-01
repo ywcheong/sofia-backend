@@ -9,6 +9,8 @@ sofia:
     skill:
       secret-token: replace-me-11!!
 spring:
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
   jpa:
     hibernate:
       ddl-auto: create-drop

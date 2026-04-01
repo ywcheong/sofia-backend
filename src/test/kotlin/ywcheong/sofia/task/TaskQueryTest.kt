@@ -574,22 +574,22 @@ class TaskQueryTest(
     }
 
     @Nested
-    @DisplayName("성과 보고서")
-    inner class GeneratePerformanceReport {
+    @DisplayName("번역 과제 CSV 다운로드")
+    inner class DownloadCsv {
 
         @Test
-        fun `관리자가 성과 보고서를 요청하면 200과 CSV 파일을 반환한다`() {
+        fun `관리자가 과제 CSV를 요청하면 200과 CSV 파일을 반환한다`() {
             // when
-            val result = requestHelper.get("/tasks/reports/performance.csv", adminInfo.secretToken)
+            val result = requestHelper.get("/tasks/csv", adminInfo.secretToken)
 
             // then
             requestHelper.assertOk(result)
             assertThat(result.response.getHeader("Content-Type")).isEqualTo("text/csv;charset=UTF-8")
-            assertThat(result.response.getHeader("Content-Disposition")).isEqualTo("attachment; filename=performance_report.csv")
+            assertThat(result.response.getHeader("Content-Disposition")).isEqualTo("attachment; filename=tasks.csv")
         }
 
         @Test
-        fun `완료된 과제가 있으면 CSV에 번역 자수가 포함된다`() {
+        fun `과제가 있으면 CSV에 과제 정보가 포함된다`() {
             // given
             val student = helper.createActiveStudent("25-051", "홍길동")
             val task = helper.createTranslationTask(
@@ -600,42 +600,43 @@ class TaskQueryTest(
             completeTask(task.id, 1000)
 
             // when
-            val result = requestHelper.get("/tasks/reports/performance.csv", adminInfo.secretToken)
+            val result = requestHelper.get("/tasks/csv", adminInfo.secretToken)
 
             // then
             requestHelper.assertOk(result)
             val csvContent = requestHelper.extractContentAsString(result)
-            assertThat(csvContent).contains("학번,이름,번역 자수,보정 자수,경고 횟수,예상 봉사시간(초)")
+            assertThat(csvContent).contains("과제유형,과제설명,담당자학번,담당자이름,배정유형,배정일시,완료여부,자수,지각여부,리마인드일시")
+            assertThat(csvContent).contains("가온누리 게시글")
+            assertThat(csvContent).contains("성과 측정용 과제")
             assertThat(csvContent).contains("25-051")
             assertThat(csvContent).contains("홍길동")
             assertThat(csvContent).contains("1000")
+            assertThat(csvContent).contains("예") // 완료여부
         }
 
         @Test
-        fun `여러 사용자의 과제가 있으면 CSV에 모두 포함된다`() {
+        fun `여러 과제가 있으면 CSV에 모두 포함된다`() {
             // given
             val student1 = helper.createActiveStudent("25-060", "학생1")
             val student2 = helper.createActiveStudent("25-061", "학생2")
-            val task1 = helper.createTranslationTask(
+            helper.createTranslationTask(
                 TranslationTask.TaskType.GAONNURI_POST,
                 "과제1",
                 student1
             )
-            val task2 = helper.createTranslationTask(
+            helper.createTranslationTask(
                 TranslationTask.TaskType.EXTERNAL_POST,
                 "과제2",
                 student2
             )
-            completeTask(task1.id, 500)
-            completeTask(task2.id, 1500)
 
             // when
-            val result = requestHelper.get("/tasks/reports/performance.csv", adminInfo.secretToken)
+            val result = requestHelper.get("/tasks/csv", adminInfo.secretToken)
 
             // then
             val csvContent = requestHelper.extractContentAsString(result)
-            assertThat(csvContent).contains("25-060", "학생1", "500")
-            assertThat(csvContent).contains("25-061", "학생2", "1500")
+            assertThat(csvContent).contains("가온누리 게시글", "과제1", "25-060", "학생1")
+            assertThat(csvContent).contains("외부 게시글", "과제2", "25-061", "학생2")
         }
     }
 
