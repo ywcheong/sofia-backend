@@ -191,6 +191,10 @@ class SystemPhaseService(
 
         validateCurrentPhase(entity.currentPhase, SystemPhase.SETTLEMENT)
 
+        // 모든 번역 과제 삭제 (FK: TranslationTask -> SofiaUser 이므로 사용자 삭제 전에 삭제)
+        logger.info { "Deleting all translation tasks during deactivation" }
+        translationTaskRepository.deleteAllInBatch()
+
         // 사용자 정리 로직
         when (mode) {
             UserRetentionMode.KEEP_ALL -> {
