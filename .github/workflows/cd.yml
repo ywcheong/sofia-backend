@@ -59,6 +59,7 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
           host: ${{ vars.EC2_HOST }}
+          ssh-host-key: ${{ vars.EC2_HOST_KEY }}
           username: ${{ vars.EC2_USERNAME }}
           files: deploy/deploy.sh deploy/secrets.env build/libs/sofia-${{ steps.version.outputs.version }}.jar
           remote-command: "/app/deploy.sh '/app/sofia-${{ steps.version.outputs.version }}.jar'"
